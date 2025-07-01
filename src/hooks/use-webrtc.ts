@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import * as Crypto from "expo-crypto";
+import { useEffect, useRef, useState } from "react";
 import {
-  RTCPeerConnection,
   MediaStream,
+  RTCPeerConnection,
   mediaDevices,
 } from "react-native-webrtc";
-import * as Crypto from "expo-crypto";
 // import SoundLevel from 'react-native-sound-level';
-import i18n from "../lib/i18n";
 import { Conversation } from "../lib/conversations";
+import i18n from "../lib/i18n";
 
 export interface Tool {
   name: string;
@@ -175,7 +175,7 @@ export default function useWebRTCAudioSession(
 
   // Fetch ephemeral token
   async function getEphemeralToken(voice: string): Promise<string> {
-    const res = await fetch("https://your.backend.com/api/session", {
+    const res = await fetch("http://localhost:3000/api/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ voice }),
