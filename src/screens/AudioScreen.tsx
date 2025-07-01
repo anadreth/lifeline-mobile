@@ -13,7 +13,7 @@ interface AudioScreenProps {
   onStartStopClick: () => void;
   onSwitchToChat: () => void;
   onClose: () => void;
-  examId?: string; // Optional examId to continue an existing exam
+  examId: string;
 }
 
 const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClose, examId }: AudioScreenProps) => {
@@ -70,7 +70,7 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Anamnéza</Text>
+        <Text style={styles.headerTitle}>Anamnéza #{examId.slice(-8)}</Text>
         <Button
           title="Dokončiť"
           onPress={handleFinishExam}

@@ -8,9 +8,10 @@ interface ChatScreenProps {
   messages: Conversation[];
   onSendMessage: (text: string) => void;
   onBack: () => void;
+  examId: string;
 }
 
-const ChatScreen = ({ messages, onSendMessage, onBack }: ChatScreenProps) => {
+const ChatScreen = ({ messages, onSendMessage, onBack, examId }: ChatScreenProps) => {
   const [inputText, setInputText] = useState('');
 
   const handleSend = () => {
@@ -30,7 +31,7 @@ const ChatScreen = ({ messages, onSendMessage, onBack }: ChatScreenProps) => {
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Chat</Text>
+        <Text style={styles.title}>Chat #{examId.slice(-8)}</Text>
       </View>
       <FlatList 
         data={messages}
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
-    backgroundColor: COLORS.lightBlue,
+    backgroundColor: COLORS.lightGrey,
     borderRadius: 20,
     paddingHorizontal: 15,
     marginRight: 10,

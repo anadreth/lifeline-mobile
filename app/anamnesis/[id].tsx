@@ -1,15 +1,16 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
-import AudioScreen from '../src/screens/AudioScreen';
-import ChatScreen from '../src/screens/ChatScreen';
-import useWebRTCAudioSession from '../src/hooks/use-webrtc';
-import { COLORS } from '../src/constants/colors';
+import AudioScreen from '../../src/screens/AudioScreen';
+import ChatScreen from '../../src/screens/ChatScreen';
+import useWebRTCAudioSession from '../../src/hooks/use-webrtc';
+import { COLORS } from '../../src/constants/colors';
 
 type Mode = 'audio' | 'chat';
 
 export default function AnamnesisScreen() {
   const router = useRouter();
+  const { id: examId } = useLocalSearchParams<{ id: string }>();
   const [mode, setMode] = useState<Mode>('audio');
   const [voice] = useState('ash');
 
@@ -34,11 +35,17 @@ export default function AnamnesisScreen() {
     setMode('audio');
   };
 
+  if (!examId) {
+    // Render a loading state or null while waiting for the ID
+    return null;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       {mode === 'audio' ? (
         <AudioScreen
+          examId={examId}
           isSessionActive={isSessionActive}
           onStartStopClick={handleStartStopClick}
           onSwitchToChat={handleSwitchToChat}
@@ -46,6 +53,7 @@ export default function AnamnesisScreen() {
         />
       ) : (
         <ChatScreen
+          examId={examId}
           messages={conversation}
           onSendMessage={sendTextMessage}
           onBack={handleBackToAudio}

@@ -40,7 +40,7 @@ const ExaminationListItem = ({ item, isDeleting, onAnimationComplete }: Examinat
   const examIdSlug = `ID: ${item.id.slice(-8)}`;
 
   const handlePress = () => {
-    router.push({ pathname: '/anamnesis', params: { examId: item.id } } as any);
+    router.push({ pathname: '/anamnesis/[id]', params: { id: item.id } });
   };
 
   const animatedContainerStyle = {
