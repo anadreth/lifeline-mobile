@@ -8,4 +8,6 @@ export const COLORS = {
   lightBlue: '#E9F0FD',
   white: '#FFFFFF',
   black: '#000000',
+  success: '#34C759', // Green for success states
+  warning: '#FF9500', // Orange for in-progress or warning states
 };

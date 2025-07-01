@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AudioScreen from '../src/screens/AudioScreen';
 import ChatScreen from '../src/screens/ChatScreen';
 import DashboardScreen from '../src/screens/DashboardScreen';
@@ -12,6 +13,7 @@ type Mode = 'audio' | 'chat' | 'dashboard';
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('dashboard');
+  const [currentExamId, setCurrentExamId] = useState<string | undefined>();
   const [voice, setVoice] = useState('ash'); // Default voice
 
   const { 
@@ -21,38 +23,58 @@ export default function App() {
     sendTextMessage,
   } = useWebRTCAudioSession(voice, []);
 
+  const handleStartExam = (examId?: string) => {
+    setCurrentExamId(examId);
+    setMode('audio');
+  };
+
+  const handleSwitchToChat = () => {
+    setMode('chat');
+  };
+
+  const handleReturnToDashboard = () => {
+    setCurrentExamId(undefined);
+    setMode('dashboard');
+  };
+
+  const handleBackToAudio = () => {
+    setMode('audio');
+  };
+
   const renderContent = () => {
     switch (mode) {
-      case 'dashboard':
-        return <DashboardScreen onNavigateToAudio={() => setMode('audio')} />;
       case 'audio':
         return (
           <AudioScreen 
             isSessionActive={isSessionActive}
             onStartStopClick={handleStartStopClick}
-            onSwitchToChat={() => setMode('chat')}
-            onClose={() => setMode('dashboard')}
+            onSwitchToChat={handleSwitchToChat}
+            onClose={handleReturnToDashboard}
+            examId={currentExamId}
           />
         );
       case 'chat':
         return (
           <ChatScreen 
-            conversation={conversation}
+            messages={conversation}
             onSendMessage={sendTextMessage}
-            onSwitchToAudio={() => setMode('audio')} 
+            onBack={handleBackToAudio}
           />
         );
+      case 'dashboard':
       default:
-        return null;
+        return <DashboardScreen onStartExam={handleStartExam} />;
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.container}>{renderContent()}</View>
-      <Toast />
-    </SafeAreaView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.container}>{renderContent()}</View>
+        <Toast />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 

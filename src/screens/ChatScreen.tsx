@@ -5,12 +5,12 @@ import { COLORS } from '../constants/colors';
 import { Conversation } from '../lib/conversations';
 
 interface ChatScreenProps {
-  conversation: Conversation[];
+  messages: Conversation[];
   onSendMessage: (text: string) => void;
-  onSwitchToAudio: () => void;
+  onBack: () => void;
 }
 
-const ChatScreen: React.FC<ChatScreenProps> = ({ conversation, onSendMessage, onSwitchToAudio }) => {
+const ChatScreen = ({ messages, onSendMessage, onBack }: ChatScreenProps) => {
   const [inputText, setInputText] = useState('');
 
   const handleSend = () => {
@@ -27,13 +27,13 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ conversation, onSendMessage, on
       keyboardVerticalOffset={90}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={onSwitchToAudio} style={styles.backButton}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>Chat</Text>
       </View>
       <FlatList 
-        data={conversation}
+        data={messages}
         keyExtractor={item => item.id}
         renderItem={({item}) => (
           <View style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.assistantBubble]}>

@@ -1,25 +1,71 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Button, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Button, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { COLORS } from '../constants/colors';
-import ExamStepperScreen from './ExamStepperScreen'; // Import the new screen
+import ExamStepperScreen from './ExamStepperScreen';
+import { Exam } from '../models/exam';
+import { createNewExam, getExamById, saveExam } from '../utils/exam-storage';
+import { totalSteps, sectionsWithIndex } from '../constants/exam-data';
 
 interface AudioScreenProps {
   isSessionActive: boolean;
   onStartStopClick: () => void;
   onSwitchToChat: () => void;
   onClose: () => void;
+  examId?: string; // Optional examId to continue an existing exam
 }
 
-const AudioScreen: React.FC<AudioScreenProps> = ({ 
-  isSessionActive, 
-  onStartStopClick, 
-  onSwitchToChat,
-  onClose
-}) => {
+const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClose, examId }: AudioScreenProps) => {
   const [settingsVisible, setSettingsVisible] = useState(false);
-  const [isExamCompleted, setIsExamCompleted] = useState(false);
+  const [exitModalVisible, setExitModalVisible] = useState(false);
+  const [exam, setExam] = useState<Exam | null>(null);
+
+  useEffect(() => {
+    const loadExam = async () => {
+      let currentExam: Exam | null = null;
+      if (examId) {
+        currentExam = await getExamById(examId);
+      } else {
+        currentExam = await createNewExam();
+      }
+      setExam(currentExam);
+    };
+    loadExam();
+  }, [examId]);
+
+  const handleStepToggle = async (stepId: string) => {
+    if (!exam) return;
+
+    const newCompletedSteps = { ...exam.completedSteps, [stepId]: !exam.completedSteps[stepId] };
+    const completedCount = Object.values(newCompletedSteps).filter(Boolean).length;
+
+    const updatedExam: Exam = {
+      ...exam,
+      completedSteps: newCompletedSteps,
+      status: completedCount === totalSteps ? 'completed' : 'in-progress',
+      updatedAt: new Date().toISOString(),
+    };
+
+    setExam(updatedExam);
+    await saveExam(updatedExam);
+
+    const stepInfo = sectionsWithIndex.flatMap(s => s.data).find(s => s.id === stepId);
+    if (stepInfo && newCompletedSteps[stepId]) {
+        Toast.show({ type: 'success', text1: stepInfo.toastText, position: 'bottom' });
+    }
+  };
+
+  const handleFinishExam = () => {
+    Toast.show({ type: 'success', text1: 'Vyšetrenie úspešne dokončené!' });
+    onClose(); // Navigate back to dashboard
+  }
+
+  if (!exam) {
+    return <ActivityIndicator size="large" style={styles.container} />;
+  }
+
+  const isExamCompleted = exam.status === 'completed';
 
   return (
     <View style={styles.container}>
@@ -27,7 +73,7 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
         <Text style={styles.headerTitle}>Anamnéza</Text>
         <Button
           title="Dokončiť"
-          onPress={() => Toast.show({ type: 'success', text1: 'Vyšetrenie úspešne dokončené!' })}
+          onPress={handleFinishExam}
           disabled={!isExamCompleted}
         />
       </View>
@@ -48,7 +94,27 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
         </View>
       </Modal>
 
-      <ExamStepperScreen onCompletionChange={setIsExamCompleted} />
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={exitModalVisible}
+        onRequestClose={() => setExitModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Are you sure you want to quit this anamnesis?</Text>
+            <View style={styles.modalButtonContainer}>
+              <Button title="Cancel" onPress={() => setExitModalVisible(false)} />
+              <Button title="Proceed" onPress={() => {
+                setExitModalVisible(false);
+                onClose();
+              }} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <ExamStepperScreen completedSteps={exam.completedSteps} onStepToggle={handleStepToggle} />
 
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={onSwitchToChat}>
@@ -60,7 +126,7 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
         <TouchableOpacity style={styles.controlButton} onPress={() => setSettingsVisible(true)}>
           <Ionicons name="ellipsis-horizontal" size={30} color={COLORS.icon} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={onClose}>
+        <TouchableOpacity style={styles.controlButton} onPress={() => setExitModalVisible(true)}>
           <Ionicons name="close" size={30} color={COLORS.icon} />
         </TouchableOpacity>
       </View>
@@ -102,13 +168,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   modalText: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 10,
   },
   controlsContainer: {
     flexDirection: 'row',
