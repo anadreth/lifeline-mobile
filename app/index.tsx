@@ -1,3 +1,4 @@
+import { Stack } from 'expo-router';
 import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import AudioScreen from '../src/screens/AudioScreen';
@@ -5,6 +6,7 @@ import ChatScreen from '../src/screens/ChatScreen';
 import DashboardScreen from '../src/screens/DashboardScreen';
 import { COLORS } from '../src/constants/colors';
 import useWebRTCAudioSession from '../src/hooks/use-webrtc';
+import Toast from 'react-native-toast-message';
 
 type Mode = 'audio' | 'chat' | 'dashboard';
 
@@ -47,7 +49,9 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>{renderContent()}</View>
+      <Toast />
     </SafeAreaView>
   );
 }

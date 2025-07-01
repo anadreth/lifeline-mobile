@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Modal, Text, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Button, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 import { COLORS } from '../constants/colors';
+import ExamStepperScreen from './ExamStepperScreen'; // Import the new screen
 
 interface AudioScreenProps {
   isSessionActive: boolean;
@@ -16,14 +18,24 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
   onSwitchToChat,
   onClose
 }) => {
-  const [isSettingsVisible, setSettingsVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [isExamCompleted, setIsExamCompleted] = useState(false);
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Anamnéza</Text>
+        <Button
+          title="Dokončiť"
+          onPress={() => Toast.show({ type: 'success', text1: 'Vyšetrenie úspešne dokončené!' })}
+          disabled={!isExamCompleted}
+        />
+      </View>
+
       <Modal
         animationType="slide"
         transparent={true}
-        visible={isSettingsVisible}
+        visible={settingsVisible}
         onRequestClose={() => setSettingsVisible(false)}
       >
         <View style={styles.modalContainer}>
@@ -36,9 +48,7 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
         </View>
       </Modal>
 
-      <View style={styles.circle}>
-        <Image source={require('../../assets/images/splash-icon.png')} style={styles.image} />
-      </View>
+      <ExamStepperScreen onCompletionChange={setIsExamCompleted} />
 
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={onSwitchToChat}>
@@ -61,52 +71,34 @@ const AudioScreen: React.FC<AudioScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: COLORS.background,
-    paddingBottom: 100, // Space for controls
   },
-  circle: {
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: COLORS.lightBlue,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    marginBottom: 60,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  controlsContainer: {
-    position: 'absolute',
-    bottom: 40,
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.white,
   },
-  controlButton: {
-    backgroundColor: COLORS.border,
-    padding: 15,
-    borderRadius: 30,
-  },
-  sessionActiveButton: {
-    backgroundColor: COLORS.primary,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    width: '80%',
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
+    width: 300,
     padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
     alignItems: 'center',
   },
   modalTitle: {
@@ -118,7 +110,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  controlsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    position: 'absolute',
+    bottom: 40,
+    paddingHorizontal: 20,
+  },
+  controlButton: {
+    backgroundColor: COLORS.white,
+    padding: 15,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sessionActiveButton: {
+    backgroundColor: COLORS.primary,
+  },
 });
 
 export default AudioScreen;
-
