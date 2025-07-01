@@ -14,6 +14,7 @@ export default function ExaminationsScreen() {
   const isFocused = useIsFocused();
   const [selectedTab, setSelectedTab] = useState<'in-progress' | 'completed'>('in-progress');
   const [exams, setExams] = useState<Exam[]>([]);
+  const [pendingDeletionId, setPendingDeletionId] = useState<string | null>(null);
 
   const fetchExams = useCallback(async () => {
     const allExams = await getAllExams();
@@ -27,6 +28,12 @@ export default function ExaminationsScreen() {
     }
   }, [isFocused, fetchExams]);
 
+  const onDeleteAnimationComplete = async (examId: string) => {
+    await deleteExamById(examId);
+    setExams(prevExams => prevExams.filter(exam => exam.id !== examId));
+    setPendingDeletionId(null);
+  };
+
   const handleDeleteExam = (examId: string) => {
     Alert.alert(
       'Delete Examination',
@@ -36,20 +43,33 @@ export default function ExaminationsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            await deleteExamById(examId);
-            fetchExams(); // Refresh the list
+          onPress: () => {
+            setPendingDeletionId(examId);
           },
         },
       ]
     );
   };
 
-  const renderHiddenItem = (data: { item: Exam }) => (
+  const renderItem = ({ item }: { item: Exam }) => (
+    <ExaminationListItem
+      item={item}
+      isDeleting={item.id === pendingDeletionId}
+      onAnimationComplete={() => onDeleteAnimationComplete(item.id)}
+    />
+  );
+
+  const renderHiddenItem = (data: { item: Exam }, rowMap: { [key: string]: any }) => (
     <View style={styles.rowBack}>
       <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnRight]}
-        onPress={() => handleDeleteExam(data.item.id)}
+        onPress={() => {
+          // Close the row first, then trigger the delete confirmation
+          if (rowMap[data.item.id]) {
+            rowMap[data.item.id].closeRow();
+          }
+          handleDeleteExam(data.item.id);
+        }}
       >
         <Ionicons name="trash-outline" size={24} color={COLORS.white} />
         <Text style={styles.backTextWhite}>Delete</Text>
@@ -84,7 +104,7 @@ export default function ExaminationsScreen() {
 
       <SwipeListView
         data={exams}
-        renderItem={({ item }) => <ExaminationListItem item={item} />}
+        renderItem={renderItem}
         renderHiddenItem={renderHiddenItem}
         keyExtractor={(item) => item.id}
         rightOpenValue={-90}
@@ -131,9 +151,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingRight: 15,
     borderRadius: 12,
-    marginBottom: 12,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    height: 124, // Explicitly set height to match the item
   },
   backRightBtn: {
     alignItems: 'center',
@@ -143,6 +164,9 @@ const styles = StyleSheet.create({
     top: 0,
     width: 90,
   },
-  backRightBtnRight: { backgroundColor: COLORS.danger, right: 0, borderTopRightRadius: 12, borderBottomRightRadius: 12 },
+  backRightBtnRight: {
+    backgroundColor: 'transparent',
+    right: 0,
+  },
   backTextWhite: { color: COLORS.white, marginTop: 4 },
 });
