@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "Lifeline",
+    "slug": "lifeline",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "lifeline",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bitcode": false,
-      "bundleIdentifier": "com.miroslav.vano.myapp"
+      "bundleIdentifier": "com.miroslav.vano.lifeline"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +29,7 @@
         "android.permission.WAKE_LOCK",
         "android.permission.BLUETOOTH"
       ],
-      "package": "com.miroslav.vano.myapp"
+      "package": "com.miroslav.vano.lifeline"
     },
     "web": {
       "bundler": "metro",
