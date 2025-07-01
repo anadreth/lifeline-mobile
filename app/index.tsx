@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import AudioScreen from '../src/screens/AudioScreen';
 import ChatScreen from '../src/screens/ChatScreen';
+import DashboardScreen from '../src/screens/DashboardScreen';
 import { COLORS } from '../src/constants/colors';
 import useWebRTCAudioSession from '../src/hooks/use-webrtc';
 
-type Mode = 'audio' | 'chat';
+type Mode = 'audio' | 'chat' | 'dashboard';
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>('audio');
+  const [mode, setMode] = useState<Mode>('dashboard');
   const [voice, setVoice] = useState('ash'); // Default voice
 
-  // NOTE: The `tools` array is empty as we are focusing on the UI first.
   const { 
     isSessionActive, 
     handleStartStopClick,
@@ -19,29 +19,35 @@ export default function App() {
     sendTextMessage,
   } = useWebRTCAudioSession(voice, []);
 
-  const handleClose = () => {
-    // Placeholder for closing the app or session
-    Alert.alert("Close Action", "This would close the session or the app.");
-  };
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {mode === 'audio' ? (
+  const renderContent = () => {
+    switch (mode) {
+      case 'dashboard':
+        return <DashboardScreen onNavigateToAudio={() => setMode('audio')} />;
+      case 'audio':
+        return (
           <AudioScreen 
             isSessionActive={isSessionActive}
             onStartStopClick={handleStartStopClick}
             onSwitchToChat={() => setMode('chat')}
-            onClose={handleClose}
+            onClose={() => setMode('dashboard')}
           />
-        ) : (
+        );
+      case 'chat':
+        return (
           <ChatScreen 
             conversation={conversation}
             onSendMessage={sendTextMessage}
             onSwitchToAudio={() => setMode('audio')} 
           />
-        )}
-      </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>{renderContent()}</View>
     </SafeAreaView>
   );
 }
