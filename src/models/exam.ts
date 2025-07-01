@@ -1,3 +1,5 @@
+import { Conversation } from '../lib/conversations';
+
 export interface ExamStepState {
   [stepId: string]: boolean;
 }
@@ -9,4 +11,5 @@ export interface Exam {
   updatedAt: string; // ISO date string
   completedSteps: ExamStepState;
   totalSteps: number;
+  conversation?: Conversation[];
 }

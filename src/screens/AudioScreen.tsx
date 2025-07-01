@@ -23,13 +23,14 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
 
   useEffect(() => {
     const loadExam = async () => {
-      let currentExam: Exam | null = null;
       if (examId) {
-        currentExam = await getExamById(examId);
+        const currentExam = await getExamById(examId);
+        setExam(currentExam);
       } else {
-        currentExam = await createNewExam();
+        // Handle case where examId is missing, perhaps show an error or navigate back
+        console.error("AudioScreen requires an examId.");
+        onClose(); // Or navigate back
       }
-      setExam(currentExam);
     };
     loadExam();
   }, [examId]);

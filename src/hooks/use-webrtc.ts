@@ -78,7 +78,11 @@ export interface UseWebRTCAudioSessionReturn {
   sendTextMessage: (text: string) => void;
 }
 
+import { getExamById, saveExam } from "../utils/exam-storage";
+import { Exam } from "../models/exam";
+
 export default function useWebRTCAudioSession(
+  examId: string,
   voice: string,
   tools?: Tool[]
 ): UseWebRTCAudioSessionReturn {
@@ -94,6 +98,38 @@ export default function useWebRTCAudioSession(
   const audioStreamRef = useRef<MediaStream | null>(null);
   const functionRegistry = useRef<Record<string, Function>>({});
   const ephemeralUserMessageIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const loadConversation = async () => {
+      if (examId) {
+        const exam = await getExamById(examId);
+        if (exam && exam.conversation) {
+          setConversation(exam.conversation);
+        } else {
+          setConversation([]);
+        }
+      }
+    };
+    loadConversation();
+  }, [examId]);
+
+  useEffect(() => {
+    const saveConversation = async () => {
+      if (examId && conversation.length > 0) {
+        const exam = await getExamById(examId);
+        if (exam) {
+          const updatedExam = { ...exam, conversation, updatedAt: new Date().toISOString() };
+          await saveExam(updatedExam);
+        }
+      }
+    };
+
+    // Do not save on initial load if conversation is empty
+    if (conversation.length > 0) {
+      saveConversation();
+    }
+  }, [conversation]);
+
 
   // Register a tool/function
   function registerFunction(name: string, fn: Function) {
