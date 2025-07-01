@@ -118,16 +118,16 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
 
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={onSwitchToChat}>
-          <Ionicons name="chatbubble-ellipses-outline" size={30} color={COLORS.icon} />
+          <Ionicons name="chatbubble-ellipses-outline" size={30} color={COLORS.textSecondary} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.controlButton, isSessionActive && styles.sessionActiveButton]} onPress={onStartStopClick}>
-          <Ionicons name="power" size={30} color={isSessionActive ? COLORS.white : COLORS.icon} />
+          <Ionicons name="power" size={30} color={isSessionActive ? COLORS.white : COLORS.textSecondary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlButton} onPress={() => setSettingsVisible(true)}>
-          <Ionicons name="ellipsis-horizontal" size={30} color={COLORS.icon} />
+          <Ionicons name="ellipsis-horizontal" size={30} color={COLORS.textSecondary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.controlButton} onPress={() => setExitModalVisible(true)}>
-          <Ionicons name="close" size={30} color={COLORS.icon} />
+          <Ionicons name="close" size={30} color={COLORS.textSecondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: COLORS.lightGrey,
     backgroundColor: COLORS.white,
   },
   headerTitle: {

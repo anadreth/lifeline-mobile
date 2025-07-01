@@ -1,13 +1,28 @@
 export const COLORS = {
-  primary: '#4263EB',
-  background: '#FFFFFF',
-  text: '#1E1E1E',
-  lightText: '#5A5A5A',
-  icon: '#1E1E1E',
-  border: '#E0E0E0',
-  lightBlue: '#E9F0FD',
+  primary: '#7C4DFF',
+  secondary: '#6C757D',
+  background: '#F8F9FA',
   white: '#FFFFFF',
   black: '#000000',
-  success: '#34C759', // Green for success states
-  warning: '#FF9500', // Orange for in-progress or warning states
+
+  // Text colors
+  text: '#212529',
+  textSecondary: '#6C757D',
+  lightText: '#ADB5BD',
+
+  // Status colors
+  success: '#28A745',
+  warning: '#FFC107',
+  danger: '#DC3545',
+  info: '#17A2B8',
+
+  // Vitals colors
+  heartRate: '#FF6B6B',
+  bloodPressure: '#4D96FF',
+  bloodOxygen: '#1DD1A1',
+
+  // Greyscale
+  border: '#DEE2E6',
+  lightGrey: '#E9ECEF',
+  darkGrey: '#343A40',
 };
