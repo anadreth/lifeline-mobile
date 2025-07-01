@@ -1,8 +1,10 @@
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import AudioScreen from '../../src/screens/AudioScreen';
 import ChatScreen from '../../src/screens/ChatScreen';
+import { getExamById } from '../../src/utils/exam-storage';
+import { Exam } from '../../src/models/exam';
 import useWebRTCAudioSession from '../../src/hooks/use-webrtc';
 import { COLORS } from '../../src/constants/colors';
 
@@ -13,6 +15,13 @@ export default function AnamnesisScreen() {
   const { id: examId } = useLocalSearchParams<{ id: string }>();
   const [mode, setMode] = useState<Mode>('audio');
   const [voice] = useState('ash');
+  const [exam, setExam] = useState<Exam | null>(null);
+
+  useEffect(() => {
+    if (examId) {
+      getExamById(examId).then(setExam);
+    }
+  }, [examId]);
 
   const { 
     isSessionActive, 
@@ -53,7 +62,7 @@ export default function AnamnesisScreen() {
         />
       ) : (
         <ChatScreen
-          examId={examId}
+          exam={exam}
           messages={conversation}
           onSendMessage={sendTextMessage}
           onBack={handleBackToAudio}

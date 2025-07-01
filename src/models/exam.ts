@@ -6,6 +6,7 @@ export interface ExamStepState {
 
 export interface Exam {
   id: string; // Unique ID, typically a timestamp
+  name: string; // User-defined name for the examination
   status: 'in-progress' | 'completed';
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string

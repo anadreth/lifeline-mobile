@@ -37,7 +37,7 @@ const ExaminationListItem = ({ item, isDeleting, onAnimationComplete }: Examinat
     minute: '2-digit',
     hour12: false,
   });
-  const examIdSlug = `ID: ${item.id.slice(-8)}`;
+  
 
   const handlePress = () => {
     router.push({ pathname: '/anamnesis/[id]', params: { id: item.id } });
@@ -57,30 +57,30 @@ const ExaminationListItem = ({ item, isDeleting, onAnimationComplete }: Examinat
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
   };
 
   return (
     <Animated.View style={animatedContainerStyle}>
-      <TouchableOpacity style={styles.container} onPress={handlePress}>
-      <View style={styles.iconContainer}>
-        <Ionicons name="document-text-outline" size={24} color={COLORS.primary} />
-      </View>
-      <View style={styles.detailsContainer}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.dateText}>{formattedDate}</Text>
-          <Text style={styles.timeText}>{formattedTime}</Text>
+      <TouchableOpacity onPress={handlePress}>
+      <View style={styles.container}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="document-text-outline" size={24} color={COLORS.primary} />
         </View>
-        <Text style={styles.statusText}>Status: {item.status}</Text>
-        {item.status === 'in-progress' && (
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: `${progress}%` }]} />
-          </View>
-        )}
-        <Text style={styles.slugText}>{examIdSlug}</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.examName}>{item.name}</Text>
+          <Text style={styles.dateText}>{formattedDate}</Text>
+          <Text style={styles.slugText}>ID: {item.id.slice(-8)}</Text>
+        </View>
+        <View style={styles.statusContainer}>
+          {item.status === 'in-progress' && (
+            <View style={styles.progressContainer}>
+              <View style={[styles.progressBar, { width: `${progress}%` }]} />
+            </View>
+          )}
+          <Ionicons name="chevron-forward-outline" size={24} color={COLORS.textSecondary} />
+        </View>
       </View>
-      <Ionicons name="chevron-forward-outline" size={24} color={COLORS.textSecondary} />
-          </TouchableOpacity>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderRadius: 12,
-    backgroundColor: 'transparent', // Make TouchableOpacity background transparent
+    backgroundColor: 'transparent',
   },
   iconContainer: {
     backgroundColor: '#E8E1FF',
@@ -99,43 +99,40 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 16,
   },
-  detailsContainer: {
+  infoContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateText: {
+  examName: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+    marginBottom: 4,
   },
-  timeText: {
-    fontSize: 14,
+  dateText: {
+    fontSize: 12,
     color: COLORS.textSecondary,
   },
-  statusText: {
-    fontSize: 14,
+  slugText: {
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginTop: 4,
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   progressContainer: {
-    height: 6,
-    backgroundColor: COLORS.lightGrey,
-    borderRadius: 3,
-    marginTop: 8,
+    width: 60,
+    height: 5,
+    backgroundColor: COLORS.border,
+    borderRadius: 2.5,
+    marginRight: 10,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
     backgroundColor: COLORS.primary,
-  },
-  slugText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 8,
   },
 });
 

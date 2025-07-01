@@ -44,9 +44,10 @@ export const saveExam = async (examToSave: Exam): Promise<void> => {
 };
 
 // Create a new exam
-export const createNewExam = async (): Promise<Exam> => {
+export const createNewExam = async (name: string): Promise<Exam> => {
   const newExam: Exam = {
     id: new Date().toISOString(), // Unique ID based on timestamp
+    name,
     status: 'in-progress',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

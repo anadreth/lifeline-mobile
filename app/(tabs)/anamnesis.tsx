@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal, TextInput, Button } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../src/constants/colors';
@@ -7,16 +7,23 @@ import { createNewExam } from '../../src/utils/exam-storage';
 
 export default function AnamnesisGatewayScreen() {
   const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [examName, setExamName] = useState('');
 
   const handleCreateNew = async () => {
+    if (!examName.trim()) {
+      // Optionally, show an alert if the name is empty
+      return;
+    }
     try {
-      const newExam = await createNewExam();
+      const newExam = await createNewExam(examName);
       if (newExam) {
+        setModalVisible(false);
+        setExamName('');
         router.push(`/anamnesis/${newExam.id}`);
       }
     } catch (error) {
       console.error('Failed to create new exam:', error);
-      // Optionally, show an error toast to the user
     }
   };
 
@@ -30,7 +37,7 @@ export default function AnamnesisGatewayScreen() {
         <Text style={styles.title}>AI Anamnesis</Text>
         <Text style={styles.subtitle}>Choose an option to get started</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleCreateNew}>
+        <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)} >
           <Ionicons name="add-circle-outline" size={32} color={COLORS.primary} />
           <View style={styles.buttonTextContainer}>
             <Text style={styles.buttonTitle}>Create New Examination</Text>
@@ -46,6 +53,30 @@ export default function AnamnesisGatewayScreen() {
           </View>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Name Your Examination</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Morning Check-in"
+              value={examName}
+              onChangeText={setExamName}
+            />
+            <View style={styles.modalButtonContainer}>
+              <Button title="Cancel" onPress={() => setModalVisible(false)} />
+              <Button title="Create" onPress={handleCreateNew} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -54,6 +85,38 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: COLORS.white,
+    borderRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    height: 50,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   content: {
     flex: 1,

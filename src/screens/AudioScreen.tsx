@@ -71,7 +71,7 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Anamnéza #{examId.slice(-8)}</Text>
+        <Text style={styles.headerTitle}>{exam ? exam.name : `Anamnéza #${examId.slice(-8)}`}</Text>
         <Button
           title="Dokončiť"
           onPress={handleFinishExam}

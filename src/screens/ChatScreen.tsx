@@ -3,15 +3,16 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Keyboard
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/colors';
 import { Conversation } from '../lib/conversations';
+import { Exam } from '../models/exam';
 
-interface ChatScreenProps {
+export interface ChatScreenProps {
+  exam: Exam | null;
   messages: Conversation[];
   onSendMessage: (text: string) => void;
   onBack: () => void;
-  examId: string;
 }
 
-const ChatScreen = ({ messages, onSendMessage, onBack, examId }: ChatScreenProps) => {
+export default function ChatScreen({ exam, messages, onSendMessage, onBack }: ChatScreenProps) {
   const [inputText, setInputText] = useState('');
 
   const handleSend = () => {
@@ -31,7 +32,7 @@ const ChatScreen = ({ messages, onSendMessage, onBack, examId }: ChatScreenProps
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Chat #{examId.slice(-8)}</Text>
+        <Text style={styles.title}>{exam?.name || 'Chat'}</Text>
       </View>
       <FlatList 
         data={messages}
@@ -128,5 +129,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default ChatScreen;
+
 
