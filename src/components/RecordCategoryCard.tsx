@@ -1,19 +1,19 @@
 import React from 'react';
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from './common/Card';
 
-interface RecordCategoryCardProps {
+export interface RecordCategoryCardProps {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   count: number;
   color: string;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 const RecordCategoryCard = ({ icon, title, count, color, onPress }: RecordCategoryCardProps) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={styles.container} activeOpacity={onPress ? 0.7 : 1}>
       <Card style={styles.card}>
         <Ionicons name={icon} size={32} color={color} />
         <Text style={styles.title}>{title}</Text>
