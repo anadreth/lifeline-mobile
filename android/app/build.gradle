@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.miroslav.vano.myapp'
+    namespace 'com.miroslav.vano.lifelineplus'
     defaultConfig {
-        applicationId 'com.miroslav.vano.myapp'
+        applicationId 'com.miroslav.vano.lifelineplus'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

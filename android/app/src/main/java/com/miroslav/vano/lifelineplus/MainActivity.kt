@@ -1,4 +1,4 @@
-package com.miroslav.vano.myapp
+package com.miroslav.vano.lifelineplus
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

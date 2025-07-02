@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
+import CustomSplashScreen from '../src/screens/SplashScreen';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -23,7 +24,7 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
-    return null;
+    return <CustomSplashScreen />;
   }
 
   return (

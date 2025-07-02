@@ -1,4 +1,4 @@
-package com.miroslav.vano.myapp
+package com.miroslav.vano.lifelineplus
 
 import android.app.Application
 import android.content.res.Configuration

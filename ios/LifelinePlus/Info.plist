@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>my-app</string>
+    <string>Lifeline Plus</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,14 +27,14 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>myapp</string>
-          <string>com.miroslav.vano.myapp</string>
+          <string>lifeline</string>
+          <string>com.miroslav.vano.lifelineplus</string>
         </array>
       </dict>
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+my-app</string>
+          <string>exp+lifeline-plus</string>
         </array>
       </dict>
     </array>

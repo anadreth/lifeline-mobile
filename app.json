@@ -1,21 +1,21 @@
 {
   "expo": {
-    "name": "Lifeline",
-    "slug": "lifeline",
+    "name": "Lifeline Plus",
+    "slug": "lifeline-plus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "lifeline",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bitcode": false,
-      "bundleIdentifier": "com.miroslav.vano.lifeline"
+      "bundleIdentifier": "com.miroslav.vano.lifelineplus"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -29,12 +29,12 @@
         "android.permission.WAKE_LOCK",
         "android.permission.BLUETOOTH"
       ],
-      "package": "com.miroslav.vano.lifeline"
+      "package": "com.miroslav.vano.lifelineplus"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
@@ -42,10 +42,9 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/logo.png",
           "resizeMode": "contain",
-          "backgroundColor": "#F8F9FA"
+          "backgroundColor": "#ffffff"
         }
       ],
       "expo-localization",
