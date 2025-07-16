@@ -76,10 +76,20 @@ export interface UseWebRTCAudioSessionReturn {
   msgs: any[];
   conversation: Conversation[];
   sendTextMessage: (text: string) => void;
+  examProgress: Record<string, boolean>;
 }
 
 import { getExamById, saveExam } from "../utils/exam-storage";
 import { Exam } from "../models/exam";
+
+// Utility function to extract markers and clean text
+function extractMarkersAndClean(text: string) {
+  const completeMatch = text.match(/\[\[COMPLETE:\s*(.*?)\s*\]\]/i);
+  const cleanText = text.replace(/\[\[.*?\]\]/g, '').trim();
+  const completePart = completeMatch?.[1]?.trim() ?? null;
+
+  return { cleanText, completePart };
+}
 
 export default function useWebRTCAudioSession(
   examId: string,
@@ -92,6 +102,7 @@ export default function useWebRTCAudioSession(
   const [msgs, setMsgs] = useState<any[]>([]);
   const [conversation, setConversation] = useState<Conversation[]>([]);
   const [currentVolume, setCurrentVolume] = useState<number>(0);
+  const [examProgress, setExamProgress] = useState<Record<string, boolean>>({});
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannelWithEvents | null>(null);
@@ -234,29 +245,62 @@ export default function useWebRTCAudioSession(
          * Streaming AI transcripts (assistant partial)
          */
         case "response.audio_transcript.delta": {
-          const newMessage: Conversation = {
-            id: Crypto.randomUUID(), // generate a fresh ID for each assistant partial
-            role: "assistant",
-            text: msg.delta,
-            timestamp: new Date().toISOString(),
-            isFinal: false,
-          };
-
-          setConversation((prev) => {
-            const lastMsg = prev[prev.length - 1];
-            if (lastMsg && lastMsg.role === "assistant" && !lastMsg.isFinal) {
-              // Append to existing assistant partial
-              const updated = [...prev];
-              updated[updated.length - 1] = {
-                ...lastMsg,
-                text: lastMsg.text + msg.delta,
-              };
-              return updated;
-            } else {
-              // Start a new assistant partial
-              return [...prev, newMessage];
+          const { content } = msg;
+          logger.info("Got audio transcript delta", msg.delta);
+          if (!content) {
+            // Extract markers and clean text
+            const { cleanText, completePart } = extractMarkersAndClean(msg.delta);
+            
+            const newMessage: Conversation = {
+              id: Crypto.randomUUID(),
+              role: "assistant",
+              text: cleanText,
+              timestamp: new Date().toISOString(),
+              isFinal: false,
+            };
+            
+            setConversation((prev) => {
+              const lastMsg = prev[prev.length - 1];
+              if (lastMsg && lastMsg.role === "assistant" && !lastMsg.isFinal) {
+                // Update existing message
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  ...lastMsg,
+                  text: lastMsg.text + cleanText,
+                };
+                return updated;
+              } else {
+                // Add new message
+                return [...prev, newMessage];
+              }
+            });
+            
+            // Process completion marker if present
+            if (completePart) {
+              logger.info(`Exam section complete: ${completePart}`);
+              setExamProgress(prev => ({ ...prev, [completePart]: true }));
+              
+              // Update exam in storage if we have an examId
+              if (examId) {
+                getExamById(examId).then(exam => {
+                  if (exam) {
+                    const updatedCompletedSteps = {
+                      ...exam.completedSteps,
+                      [completePart]: true
+                    };
+                    
+                    const updatedExam: Exam = {
+                      ...exam,
+                      completedSteps: updatedCompletedSteps,
+                      updatedAt: new Date().toISOString()
+                    };
+                    
+                    saveExam(updatedExam);
+                  }
+                });
+              }
             }
-          });
+          }
           break;
         }
 
@@ -719,5 +763,6 @@ export default function useWebRTCAudioSession(
     msgs,
     conversation,
     sendTextMessage,
+    examProgress,
   };
 }

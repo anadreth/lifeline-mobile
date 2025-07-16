@@ -28,6 +28,7 @@ export default function AnamnesisScreen() {
     handleStartStopClick,
     conversation,
     sendTextMessage,
+    examProgress,
   } = useWebRTCAudioSession(examId, voice, []);
 
   const handleSwitchToChat = () => {
@@ -59,6 +60,7 @@ export default function AnamnesisScreen() {
           onStartStopClick={handleStartStopClick}
           onSwitchToChat={handleSwitchToChat}
           onClose={handleClose}
+          examProgress={examProgress}
         />
       ) : (
         <ChatScreen

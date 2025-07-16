@@ -5,7 +5,7 @@ import Toast from 'react-native-toast-message';
 import { COLORS } from '../constants/colors';
 import ExamStepperScreen from './ExamStepperScreen';
 import { Exam } from '../models/exam';
-import { createNewExam, getExamById, saveExam } from '../utils/exam-storage';
+import { getExamById, saveExam } from '../utils/exam-storage';
 import { totalSteps, sectionsWithIndex } from '../constants/exam-data';
 
 interface AudioScreenProps {
@@ -14,9 +14,10 @@ interface AudioScreenProps {
   onSwitchToChat: () => void;
   onClose: () => void;
   examId: string;
+  examProgress?: Record<string, boolean>;
 }
 
-const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClose, examId }: AudioScreenProps) => {
+const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClose, examId, examProgress = {} }: AudioScreenProps) => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [exam, setExam] = useState<Exam | null>(null);
@@ -34,6 +35,53 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
     };
     loadExam();
   }, [examId]);
+  
+  // React to changes in examProgress from WebRTC hook
+  useEffect(() => {
+    const processExamProgress = async () => {
+      if (!exam || Object.keys(examProgress).length === 0) return;
+      
+      let hasUpdates = false;
+      const newCompletedSteps = { ...exam.completedSteps };
+      
+      // Check for newly completed steps
+      for (const [part, isCompleted] of Object.entries(examProgress)) {
+        // Find the step ID matching this part name
+        const matchingStep = sectionsWithIndex
+          .flatMap(section => section.data)
+          .find(step => step.title.includes(part));
+        
+        if (matchingStep && isCompleted && !exam.completedSteps[matchingStep.id]) {
+          // This step was just completed by AI
+          newCompletedSteps[matchingStep.id] = true;
+          hasUpdates = true;
+          
+          // Show toast for completed step
+          Toast.show({
+            type: 'success',
+            text1: matchingStep.toastText,
+            position: 'bottom'
+          });
+        }
+      }
+      
+      if (hasUpdates) {
+        const completedCount = Object.values(newCompletedSteps).filter(Boolean).length;
+        
+        const updatedExam: Exam = {
+          ...exam,
+          completedSteps: newCompletedSteps,
+          status: completedCount === totalSteps ? 'completed' : 'in-progress',
+          updatedAt: new Date().toISOString(),
+        };
+        
+        setExam(updatedExam);
+        await saveExam(updatedExam);
+      }
+    };
+    
+    processExamProgress();
+  }, [exam, examProgress]);
 
   const handleStepToggle = async (stepId: string) => {
     if (!exam) return;
@@ -116,6 +164,39 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
       </Modal>
 
       <ExamStepperScreen completedSteps={exam.completedSteps} onStepToggle={handleStepToggle} />
+      
+      {/* Test button for simulating AI completion marker */}
+      <View style={styles.testButtonContainer}>
+        <TouchableOpacity 
+          style={styles.testButton}
+          onPress={() => {
+            // Simulate receiving a message with completion marker
+            const mockCompletePart = 'Vyšetrenie zraku';
+            if (examProgress) {
+              const simulatedProgress = { ...examProgress, [mockCompletePart]: true };
+              
+              // Simulate the process as if WebRTC detected a marker
+              const matchingStep = sectionsWithIndex
+                .flatMap(section => section.data)
+                .find(step => step.title.includes(mockCompletePart));
+              
+              if (matchingStep && !exam.completedSteps[matchingStep.id]) {
+                // Simulate step completion
+                handleStepToggle(matchingStep.id);
+                
+                Toast.show({
+                  type: 'success', 
+                  text1: `TEST: Detected [[COMPLETE: ${mockCompletePart}]] marker`,
+                  text2: 'Step marked as complete',
+                  position: 'bottom'
+                });
+              }
+            }
+          }}
+        >
+          <Text style={styles.testButtonText}>TEST AI COMPLETION</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={onSwitchToChat}>
@@ -139,6 +220,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  testButtonContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  testButton: {
+    backgroundColor: COLORS.warning,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    elevation: 3,
+  },
+  testButtonText: {
+    color: COLORS.white,
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   header: {
     flexDirection: 'row',
