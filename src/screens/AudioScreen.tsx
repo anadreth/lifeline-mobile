@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Button, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { useRouter } from 'expo-router';
 import { COLORS } from '../constants/colors';
 import ExamStepperScreen from './ExamStepperScreen';
 import { Exam } from '../models/exam';
 import { getExamById, saveExam } from '../utils/exam-storage';
 import { totalSteps, sectionsWithIndex } from '../constants/exam-data';
+import ExamControls from '../components/ExamControls';
 
 interface AudioScreenProps {
   isSessionActive: boolean;
@@ -15,9 +17,11 @@ interface AudioScreenProps {
   onClose: () => void;
   examId: string;
   examProgress?: Record<string, boolean>;
+  onSettingsClick?: () => void;
 }
 
 const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClose, examId, examProgress = {} }: AudioScreenProps) => {
+  const router = useRouter();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [exam, setExam] = useState<Exam | null>(null);
@@ -65,13 +69,8 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
     
     // Only allow setting steps to completed (not toggling) and only when triggered by AI or test
     if (!fromAI) {
-      // If a user tries to manually toggle, show a message explaining they can't
-      Toast.show({ 
-        type: 'info', 
-        text1: 'Kroky vyšetrenia nemôžu byť označené manuálne', 
-        text2: 'Vyšetrenie musí byť vykonané pomocou AI asistenta',
-        position: 'bottom' 
-      });
+      // If a user tries to manually toggle, navigate to step detail screen
+      router.push(`/anamnesis/step/${stepId}?examId=${examId}`);
       return;
     }
     
@@ -117,6 +116,7 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
         />
       </View>
 
+      {/* Settings Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -133,6 +133,7 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
         </View>
       </Modal>
 
+      {/* Exit Confirmation Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -188,20 +189,13 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
         </TouchableOpacity>
       </View>
 
-      <View style={styles.controlsContainer}>
-        <TouchableOpacity style={styles.controlButton} onPress={onSwitchToChat}>
-          <Ionicons name="chatbubble-ellipses-outline" size={30} color={COLORS.textSecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.controlButton, isSessionActive && styles.sessionActiveButton]} onPress={onStartStopClick}>
-          <Ionicons name="power" size={30} color={isSessionActive ? COLORS.white : COLORS.textSecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={() => setSettingsVisible(true)}>
-          <Ionicons name="ellipsis-horizontal" size={30} color={COLORS.textSecondary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton} onPress={() => setExitModalVisible(true)}>
-          <Ionicons name="close" size={30} color={COLORS.textSecondary} />
-        </TouchableOpacity>
-      </View>
+      <ExamControls
+        isSessionActive={isSessionActive}
+        onStartStopClick={onStartStopClick}
+        onSwitchToChat={onSwitchToChat}
+        onSettingsClick={() => setSettingsVisible(true)}
+        onExitClick={() => setExitModalVisible(true)}
+      />
     </View>
   );
 };
