@@ -41,9 +41,6 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
     const processExamProgress = async () => {
       if (!exam || Object.keys(examProgress).length === 0) return;
       
-      let hasUpdates = false;
-      const newCompletedSteps = { ...exam.completedSteps };
-      
       // Check for newly completed steps
       for (const [part, isCompleted] of Object.entries(examProgress)) {
         // Find the step ID matching this part name
@@ -52,41 +49,34 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
           .find(step => step.title.includes(part));
         
         if (matchingStep && isCompleted && !exam.completedSteps[matchingStep.id]) {
-          // This step was just completed by AI
-          newCompletedSteps[matchingStep.id] = true;
-          hasUpdates = true;
-          
-          // Show toast for completed step
-          Toast.show({
-            type: 'success',
-            text1: matchingStep.toastText,
-            position: 'bottom'
-          });
+          // Use the handleStepToggle function with fromAI=true to mark this step as complete
+          // This ensures consistent handling and notifications
+          await handleStepToggle(matchingStep.id, true);
         }
-      }
-      
-      if (hasUpdates) {
-        const completedCount = Object.values(newCompletedSteps).filter(Boolean).length;
-        
-        const updatedExam: Exam = {
-          ...exam,
-          completedSteps: newCompletedSteps,
-          status: completedCount === totalSteps ? 'completed' : 'in-progress',
-          updatedAt: new Date().toISOString(),
-        };
-        
-        setExam(updatedExam);
-        await saveExam(updatedExam);
       }
     };
     
     processExamProgress();
   }, [exam, examProgress]);
 
-  const handleStepToggle = async (stepId: string) => {
+  // This function now requires a 'fromAI' flag to indicate if the toggle is coming from AI or manual interaction
+  const handleStepToggle = async (stepId: string, fromAI: boolean = false) => {
     if (!exam) return;
-
-    const newCompletedSteps = { ...exam.completedSteps, [stepId]: !exam.completedSteps[stepId] };
+    
+    // Only allow setting steps to completed (not toggling) and only when triggered by AI or test
+    if (!fromAI) {
+      // If a user tries to manually toggle, show a message explaining they can't
+      Toast.show({ 
+        type: 'info', 
+        text1: 'Kroky vyšetrenia nemôžu byť označené manuálne', 
+        text2: 'Vyšetrenie musí byť vykonané pomocou AI asistenta',
+        position: 'bottom' 
+      });
+      return;
+    }
+    
+    // Always set to completed, never toggle off when coming from AI
+    const newCompletedSteps = { ...exam.completedSteps, [stepId]: true };
     const completedCount = Object.values(newCompletedSteps).filter(Boolean).length;
 
     const updatedExam: Exam = {
@@ -163,7 +153,7 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
         </View>
       </Modal>
 
-      <ExamStepperScreen completedSteps={exam.completedSteps} onStepToggle={handleStepToggle} />
+      <ExamStepperScreen completedSteps={exam.completedSteps} onStepToggle={(stepId) => handleStepToggle(stepId, false)} />
       
       {/* Test button for simulating AI completion marker */}
       <View style={styles.testButtonContainer}>
@@ -181,8 +171,8 @@ const AudioScreen = ({ isSessionActive, onStartStopClick, onSwitchToChat, onClos
                 .find(step => step.title.includes(mockCompletePart));
               
               if (matchingStep && !exam.completedSteps[matchingStep.id]) {
-                // Simulate step completion
-                handleStepToggle(matchingStep.id);
+                // Simulate step completion (with fromAI=true to allow the action)
+                handleStepToggle(matchingStep.id, true);
                 
                 Toast.show({
                   type: 'success', 
