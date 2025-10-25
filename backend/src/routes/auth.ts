@@ -87,27 +87,27 @@ router.post('/register', async (req, res, next) => {
     const encryptedVitalsKey = EncryptionService.encryptWithRSA(vitalsKey, publicKey);
     const encryptedRecordsKey = EncryptionService.encryptWithRSA(recordsKey, publicKey);
 
-    // Store encrypted data keys
+    // Store encrypted data keys (convert to Buffer for Prisma Bytes type)
     await Promise.all([
       prisma.encryptedDataKey.create({
         data: {
           user_id: userId,
           data_type: 'exam',
-          encrypted_key: encryptedExamKey,
+          encrypted_key: Buffer.from(encryptedExamKey),
         },
       }),
       prisma.encryptedDataKey.create({
         data: {
           user_id: userId,
           data_type: 'vitals',
-          encrypted_key: encryptedVitalsKey,
+          encrypted_key: Buffer.from(encryptedVitalsKey),
         },
       }),
       prisma.encryptedDataKey.create({
         data: {
           user_id: userId,
           data_type: 'records',
-          encrypted_key: encryptedRecordsKey,
+          encrypted_key: Buffer.from(encryptedRecordsKey),
         },
       }),
     ]);
@@ -138,7 +138,7 @@ router.post('/register', async (req, res, next) => {
       // Client needs these for initial setup
       encryptedPrivateKey,
       dataKeys: {
-        exam: encryptedExamKey,
+        exam: encryptedExamKey, // Already a string from EncryptionService
         vitals: encryptedVitalsKey,
         records: encryptedRecordsKey,
       },
@@ -202,7 +202,7 @@ router.post('/login', async (req, res, next) => {
 
     const dataKeys: Record<string, string> = {};
     dataKeysRecords.forEach((row) => {
-      dataKeys[row.data_type] = row.encrypted_key;
+      dataKeys[row.data_type] = Buffer.from(row.encrypted_key).toString('base64');
     });
 
     // Generate JWT token

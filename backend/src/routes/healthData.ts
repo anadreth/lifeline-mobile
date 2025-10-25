@@ -66,7 +66,7 @@ router.post('/', async (req, res, next) => {
         data: {
           user_id: userId,
           data_type: dataType,
-          encrypted_key: encryptedDataKey,
+          encrypted_key: Buffer.from(encryptedDataKey),
         },
       });
     }
@@ -147,7 +147,7 @@ router.get('/', async (req, res, next) => {
         encryptedPayload,
         tag,
         nonce: row.nonce,
-        encryptedDataKey: row.data_key.encrypted_key,
+        encryptedDataKey: Buffer.from(row.data_key.encrypted_key).toString('base64'),
         metadata: row.metadata_encrypted ? JSON.parse(Buffer.from(row.metadata_encrypted).toString('utf8')) : null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -212,7 +212,7 @@ router.get('/:id', async (req, res, next) => {
       encryptedPayload,
       tag,
       nonce: record.nonce,
-      encryptedDataKey: record.data_key.encrypted_key,
+      encryptedDataKey: Buffer.from(record.data_key.encrypted_key).toString('base64'),
       metadata: record.metadata_encrypted ? JSON.parse(Buffer.from(record.metadata_encrypted).toString('utf8')) : null,
       createdAt: record.created_at,
       updatedAt: record.updated_at,

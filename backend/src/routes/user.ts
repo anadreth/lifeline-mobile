@@ -57,7 +57,7 @@ router.get('/keys', async (req, res, next) => {
     const keys: Record<string, any> = {};
     dataKeys.forEach((row) => {
       keys[row.data_type] = {
-        encryptedKey: row.encrypted_key,
+        encryptedKey: Buffer.from(row.encrypted_key).toString('base64'),
         version: row.key_version,
       };
     });
