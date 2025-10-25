@@ -5,9 +5,9 @@ import Joi from 'joi';
 import { query } from '../config/database';
 import { EncryptionService } from '../utils/encryption';
 import { ValidationError, ConflictError, UnauthorizedError } from '../middleware/errorHandler';
+import { cacheSet } from '../config/redis';
 import { logger } from '../utils/logger';
-import { cacheSet, cacheDel } from '../config/redis';
-import { v4 as uuidv4 } from 'uuid';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -217,15 +217,23 @@ router.post('/login', async (req, res, next) => {
 });
 
 // Logout user
-router.post('/logout', async (req, res, next) => {
+router.post('/logout', authenticateToken, async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = authHeader?.split(' ')[1];
+    const user = (req as AuthenticatedRequest).user;
 
     if (token) {
-      // Add token to blacklist (expires in 24h)
+      // Add token to blacklist (expires in 24h to match JWT expiry)
       await cacheSet(`blacklist:${token}`, 'true', 24 * 60 * 60);
     }
+
+    // Log logout for audit trail
+    await query(
+      `INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [user.id, 'LOGOUT', 'user', req.ip, req.get('User-Agent'), new Date()]
+    );
 
     res.json({ message: 'Logout successful' });
   } catch (error) {

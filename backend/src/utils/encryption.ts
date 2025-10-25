@@ -23,13 +23,13 @@ export class EncryptionService {
     try {
       const keyBuffer = Buffer.from(key, 'hex');
       const ivBuffer = iv ? Buffer.from(iv, 'hex') : crypto.randomBytes(this.IV_LENGTH);
-      
-      const cipher = crypto.createCipher(this.ALGORITHM, keyBuffer);
+
+      const cipher = crypto.createCipheriv(this.ALGORITHM, keyBuffer, ivBuffer);
       cipher.setAAD(Buffer.from('lifeline-health-data', 'utf8'));
-      
+
       let encrypted = cipher.update(data, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      
+
       const tag = cipher.getAuthTag();
 
       return {
@@ -49,14 +49,14 @@ export class EncryptionService {
       const keyBuffer = Buffer.from(key, 'hex');
       const ivBuffer = Buffer.from(iv, 'hex');
       const tagBuffer = Buffer.from(tag, 'hex');
-      
-      const decipher = crypto.createDecipher(this.ALGORITHM, keyBuffer);
+
+      const decipher = crypto.createDecipheriv(this.ALGORITHM, keyBuffer, ivBuffer);
       decipher.setAAD(Buffer.from('lifeline-health-data', 'utf8'));
       decipher.setAuthTag(tagBuffer);
-      
+
       let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
-      
+
       return decrypted;
     } catch (error) {
       logger.error('Decryption failed:', error);
