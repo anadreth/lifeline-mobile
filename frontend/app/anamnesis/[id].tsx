@@ -29,7 +29,7 @@ export default function AnamnesisScreen() {
     conversation,
     sendTextMessage,
     examProgress,
-  } = useWebRTCAudioSession(examId, voice, []);
+  } = useWebRTCAudioSession(examId, voice);
 
   const handleSwitchToChat = () => {
     setMode('chat');

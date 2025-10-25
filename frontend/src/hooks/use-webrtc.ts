@@ -77,6 +77,7 @@ export interface UseWebRTCAudioSessionReturn {
   conversation: Conversation[];
   sendTextMessage: (text: string) => void;
   examProgress: Record<string, boolean>;
+  cancelAssistant: () => void;
 }
 
 import { getExamById, saveExam } from "../utils/exam-storage";
@@ -85,16 +86,22 @@ import { Exam } from "../models/exam";
 // Utility function to extract markers and clean text
 function extractMarkersAndClean(text: string) {
   const completeMatch = text.match(/\[\[COMPLETE:\s*(.*?)\s*\]\]/i);
-  const cleanText = text.replace(/\[\[.*?\]\]/g, '').trim();
+  const cleanText = text.replace(/\[\[.*?\]\]/g, "").trim();
   const completePart = completeMatch?.[1]?.trim() ?? null;
 
   return { cleanText, completePart };
 }
 
+async function fetchIceConfig() {
+  const host = Platform.OS === "android" ? "10.0.2.2" : "192.168.1.116";
+  const res = await fetch(`http://${host}:3000/api/openai-session/ice`);
+  if (!res.ok) throw new Error("Failed to get ICE config");
+  return res.json(); // { iceServers: [...] }
+}
+
 export default function useWebRTCAudioSession(
   examId: string,
-  voice: string,
-  tools?: Tool[]
+  voice: string
 ): UseWebRTCAudioSessionReturn {
   const t = i18n.t;
   const [status, setStatus] = useState<string>("");
@@ -129,7 +136,11 @@ export default function useWebRTCAudioSession(
       if (examId && conversation.length > 0) {
         const exam = await getExamById(examId);
         if (exam) {
-          const updatedExam = { ...exam, conversation, updatedAt: new Date().toISOString() };
+          const updatedExam = {
+            ...exam,
+            conversation,
+            updatedAt: new Date().toISOString(),
+          };
           await saveExam(updatedExam);
         }
       }
@@ -140,7 +151,6 @@ export default function useWebRTCAudioSession(
       saveConversation();
     }
   }, [conversation]);
-
 
   // Register a tool/function
   function registerFunction(name: string, fn: Function) {
@@ -190,6 +200,10 @@ export default function useWebRTCAudioSession(
         case "input_audio_buffer.speech_started": {
           getOrCreateEphemeralUserId();
           updateEphemeralUserMessage({ status: "speaking" });
+
+          dataChannelRef.current?.send(
+            JSON.stringify({ type: "response.cancel" })
+          );
           break;
         }
 
@@ -249,8 +263,10 @@ export default function useWebRTCAudioSession(
           logger.info("Got audio transcript delta", msg.delta);
           if (!content) {
             // Extract markers and clean text
-            const { cleanText, completePart } = extractMarkersAndClean(msg.delta);
-            
+            const { cleanText, completePart } = extractMarkersAndClean(
+              msg.delta
+            );
+
             const newMessage: Conversation = {
               id: Crypto.randomUUID(),
               role: "assistant",
@@ -258,7 +274,7 @@ export default function useWebRTCAudioSession(
               timestamp: new Date().toISOString(),
               isFinal: false,
             };
-            
+
             setConversation((prev) => {
               const lastMsg = prev[prev.length - 1];
               if (lastMsg && lastMsg.role === "assistant" && !lastMsg.isFinal) {
@@ -274,29 +290,45 @@ export default function useWebRTCAudioSession(
                 return [...prev, newMessage];
               }
             });
-            
+
             // Process completion marker if present
             if (completePart) {
               logger.info(`Exam section complete: ${completePart}`);
-              setExamProgress(prev => ({ ...prev, [completePart]: true }));
-              
+              setExamProgress((prev) => ({ ...prev, [completePart]: true }));
+
               // Update exam in storage if we have an examId
               if (examId) {
-                getExamById(examId).then(exam => {
+                getExamById(examId).then(async (exam) => {
                   if (exam) {
                     const updatedCompletedSteps = {
                       ...exam.completedSteps,
-                      [completePart]: true
+                      [completePart]: true,
                     };
-                    
                     const updatedExam: Exam = {
                       ...exam,
                       completedSteps: updatedCompletedSteps,
-                      updatedAt: new Date().toISOString()
+                      updatedAt: new Date().toISOString(),
                     };
-                    
-                    saveExam(updatedExam);
+                    saveExam(updatedExam); //should this be here?
                   }
+
+                  const host =
+                    Platform.OS === "android" ? "10.0.2.2" : "192.168.1.116";
+                  const summary = await fetch(
+                    `http://${host}:3000/api/bb/summary?examId=${examId}`
+                  )
+                    .then((r) => r.text())
+                    .catch(() => "");
+
+                  dataChannelRef.current?.send(
+                    JSON.stringify({
+                      type: "conversation.truncate",
+                      conversation: {
+                        last_messages: 8,
+                        summary, // server-truth z BLACKBOARD-u
+                      },
+                    })
+                  );
                 });
               }
             }
@@ -321,32 +353,45 @@ export default function useWebRTCAudioSession(
          * AI calls a function (tool)
          */
         case "response.function_call_arguments.done": {
-          const fn = functionRegistry.current[msg.name];
-          if (fn) {
-            const args = JSON.parse(msg.arguments);
-            const result = await fn(args);
+          const toolName = msg.name;
+          const args = JSON.parse(msg.arguments || "{}");
 
-            // Respond with function output
-            const response = {
+          if (!args.examId) args.examId = examId;
+
+          const host = Platform.OS === "android" ? "10.0.2.2" : "192.168.1.116";
+          const toolEndpoint = `http://${host}:3000/api/tools/${toolName}`;
+
+          let result: any = { ok: false };
+          try {
+            const r = await fetch(toolEndpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(args),
+            });
+            result = await r.json();
+          } catch (e) {
+            logger.error("Tool proxy error", e);
+            result = { ok: false, error: String(e) };
+          }
+
+          dataChannelRef.current?.send(
+            JSON.stringify({
               type: "conversation.item.create",
               item: {
                 type: "function_call_output",
                 call_id: msg.call_id,
                 output: JSON.stringify(result),
               },
-            };
-            dataChannelRef.current?.send(JSON.stringify(response));
-
-            const responseCreate = {
-              type: "response.create",
-            };
-            dataChannelRef.current?.send(JSON.stringify(responseCreate));
-          }
+            })
+          );
+          dataChannelRef.current?.send(
+            JSON.stringify({ type: "response.create" })
+          );
           break;
         }
 
         default: {
-          // console.warn("Unhandled message type:", msg.type);
+          console.warn("Unhandled message type:", msg.type);
           break;
         }
       }
@@ -366,7 +411,7 @@ export default function useWebRTCAudioSession(
         ? "10.0.2.2" // emulator → your computer
         : "192.168.1.116"; // iOS simulator → your computer
 
-    const endpoint = `http://${host}:3000/api/session`;
+    const endpoint = `http://${host}:3000/api/openai-session`;
     logger.info(`Fetching ephemeral token for voice: ${voice}`);
 
     try {
@@ -375,7 +420,7 @@ export default function useWebRTCAudioSession(
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voice }),
+        body: JSON.stringify({ voice, examId, locale: i18n.locale || "sk-SK" }),
       });
 
       // Log response status
@@ -403,7 +448,7 @@ export default function useWebRTCAudioSession(
       }
 
       const json = await res.json();
-      if (!json.client_secret?.value) {
+      if (!json.data.client_secret?.value) {
         logger.error("Token response missing client_secret.value", json);
         throw new APIError(
           "Invalid token response format",
@@ -414,7 +459,7 @@ export default function useWebRTCAudioSession(
       }
 
       logger.info("Successfully retrieved ephemeral token");
-      return json.client_secret.value;
+      return json.data.client_secret.value;
     } catch (error: unknown) {
       if (error instanceof APIError) {
         throw error; // Re-throw API errors that we've already formatted
@@ -440,6 +485,18 @@ export default function useWebRTCAudioSession(
       logger.info("Requesting microphone access");
       try {
         const stream = await mediaDevices.getUserMedia({ audio: true });
+
+        // kvalitny mikrofon
+        // const stream = await mediaDevices.getUserMedia({
+        //   audio: {
+        //     echoCancellation: true,
+        //     noiseSuppression: true,
+        //     autoGainControl: true,
+        //     // Pri niektorých zariadeniach pomôže nižší sampleRate
+        //     // sampleRate: 16000, // nastav len ak to RN-webrtc build podporuje
+        //   } as any,
+        // });
+
         audioStreamRef.current = stream;
         logger.info("Microphone access granted");
       } catch (micError) {
@@ -474,7 +531,10 @@ export default function useWebRTCAudioSession(
       // Step 3: Create and configure peer connection
       setStatus("Setting up connection...");
       logger.info("Creating RTCPeerConnection");
-      const pc = new RTCPeerConnection();
+
+      const { iceServers } = await fetchIceConfig();
+
+      const pc = new RTCPeerConnection({ iceServers });
       peerConnectionRef.current = pc;
 
       // Set up connection event listeners
@@ -487,6 +547,11 @@ export default function useWebRTCAudioSession(
           logger.error("WebRTC connection failed or disconnected");
           setStatus("Connection lost");
           // Consider a graceful recovery approach here
+          /**
+           * Ak pc.iceConnectionState → "failed"/"disconnected", zobraz „Reconnect…“
+           * a zavolaj stopSession() → startSession()
+           * (tvoj kód to už loguje; len doplň tlačidlo).
+           */
         }
       };
 
@@ -535,8 +600,8 @@ export default function useWebRTCAudioSession(
                 type: "session.update",
                 session: {
                   modalities: ["text", "audio"],
-                  tools: tools || [],
                   input_audio_transcription: { model: "gpt-4o-transcribe" },
+                  conversation: { max_response_output_tokens: 160 },
                 },
               })
             );
@@ -690,6 +755,10 @@ export default function useWebRTCAudioSession(
     isSessionActive ? stopSession() : startSession();
   }
 
+  function cancelAssistant() {
+    dataChannelRef.current?.send(JSON.stringify({ type: "response.cancel" }));
+  }
+
   // Send text through data channel
   function sendTextMessage(text: string) {
     logger.info("Attempting to send text message");
@@ -764,5 +833,6 @@ export default function useWebRTCAudioSession(
     conversation,
     sendTextMessage,
     examProgress,
+    cancelAssistant,
   };
 }

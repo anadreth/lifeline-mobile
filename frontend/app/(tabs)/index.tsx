@@ -1,26 +1,39 @@
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import DailyHealthNudgesCard from '../../src/components/DailyHealthNudgesCard';
-import HealthGoalsCard from '../../src/components/HealthGoalsCard';
-import LiveVitalsCard from '../../src/components/LiveVitalsCard';
-import MyAIHealthAssistantCard from '../../src/components/MyAIHealthAssistantCard';
-import UpcomingAppointmentsCard from '../../src/components/UpcomingAppointmentsCard';
-import { COLORS } from '../../src/constants/colors';
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+} from "react-native";
+import DailyHealthNudgesCard from "../../src/components/DailyHealthNudgesCard";
+import HealthGoalsCard from "../../src/components/HealthGoalsCard";
+import LiveVitalsCard from "../../src/components/LiveVitalsCard";
+import MyAIHealthAssistantCard from "../../src/components/MyAIHealthAssistantCard";
+import UpcomingAppointmentsCard from "../../src/components/UpcomingAppointmentsCard";
+import { COLORS } from "../../src/constants/colors";
 
 export default function HomeScreen() {
   const router = useRouter();
 
   const handleChatNow = () => {
-    router.push({ pathname: '/anamnesis' } as any);
+    router.push({ pathname: "/anamnesis" } as any);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
+        <Button
+          onPress={() => router.push("/anamnesis/1")}
+          title="to anamnesis 1"
+        />
         <View style={styles.header}>
           <Text style={styles.title}>Good morning, Alex! 👋</Text>
-          <Text style={styles.subtitle}>Here's your health overview for today</Text>
+          <Text style={styles.subtitle}>
+            Here's your health overview for today
+          </Text>
         </View>
         <LiveVitalsCard />
         <MyAIHealthAssistantCard onPress={handleChatNow} />
@@ -46,7 +59,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.text,
   },
   subtitle: {
@@ -55,4 +68,3 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
-

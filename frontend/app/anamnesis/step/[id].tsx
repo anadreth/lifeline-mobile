@@ -24,7 +24,7 @@ export default function ExamStepDetailScreen() {
     stopSession,
     handleStartStopClick: toggleSession,
     examProgress
-  } = useWebRTCAudioSession(examId as string, 'sk-SK', []);
+  } = useWebRTCAudioSession(examId as string, 'sk-SK');
 
   useEffect(() => {
     if (id) {

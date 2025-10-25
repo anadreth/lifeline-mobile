@@ -62,8 +62,9 @@ model EncryptedHealthData {
   updated_at         DateTime @updatedAt
 
   // Relations
-  user     User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  data_key EncryptedDataKey @relation(fields: [data_key_id], references: [id])
+  user              User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  data_key          EncryptedDataKey @relation(fields: [data_key_id], references: [id])
+  chat_conversations ChatConversation[] // Chats linked to this exam/health record
 
   @@map("encrypted_health_data")
 }
@@ -71,14 +72,15 @@ model EncryptedHealthData {
 model ChatConversation {
   id                 String   @id @default(uuid())
   user_id            String
-  exam_id            String?
+  exam_id            String?  // References encrypted_health_data.id (where data_type = 'exam')
   encrypted_messages Bytes
   message_count      Int
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exam EncryptedHealthData?   @relation(fields: [exam_id], references: [id], onDelete: SetNull)
 
   @@map("chat_conversations")
 }
