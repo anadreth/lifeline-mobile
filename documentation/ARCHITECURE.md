@@ -159,7 +159,7 @@ Each maps to an Express handler:
 | `blackboard.write`    | Writes value to Redis blackboard at given path           |
 | `blackboard.read`     | Reads section from Redis blackboard                      |
 | `blackboard.summary`  | Returns concise summary for model context                |
-| `checkpoint.mark`     | Marks a section complete and triggers summary logic      |
+| `checkpoint.mark`     | **Primary checkpoint mechanism.** Marks section complete, returns structured response with summary, bbVersion, and coverage. Replaces [[COMPLETE]] text markers. |
 | `router.switch_agent` | Switches active agent (logical subprompt)                |
 | `ehr.export`          | Generates FHIR bundle from current blackboard            |
 | `qa.raise_conflict`   | Creates short Q&A subflow for ambiguous/conflicting data |
@@ -216,6 +216,46 @@ Frontend still stores local copies of progress (exam steps, timestamps) using `s
 - Instant UI updates
 - Offline tolerance
 - The Redis blackboard remains the canonical data source
+
+---
+
+### 9. Checkpoint Mechanism (Tool-Based)
+
+After completing each section, the model calls:
+
+```typescript
+checkpoint.mark({ section: "HPI", examId: "uuid" })
+```
+
+Backend returns:
+
+```json
+{
+  "ok": true,
+  "section": "HPI",
+  "bbVersion": 27,
+  "coverage": 0.91,
+  "summary": "CC: chest pain | CAVE: ... | HPI: ..."
+}
+```
+
+Frontend processes this in `function_call_output` handler:
+
+- Updates UI progress
+- Saves exam state locally
+- Truncates conversation with summary (no extra HTTP call)
+
+**Fallback:** If tool fails, model can emit `[[COMPLETE: SECTION]]` text marker (parsed from audio transcript).
+
+**Advantages:**
+
+- ✅ **Less latency** - no extra HTTP call for summary
+- ✅ **Robustness** - structured tool call instead of text parsing
+- ✅ **Debuggability** - tool call visible in message log
+- ✅ **Backward compatible** - [[COMPLETE]] fallback preserved
+- ✅ **Idempotence ready** - bbVersion enables duplicate detection
+- ✅ **Localization-safe** - section name is parameter, not text
+- ✅ **Barge-in safe** - tool call won't interrupt during speech
 
 ---
 

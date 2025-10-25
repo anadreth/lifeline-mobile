@@ -374,6 +374,7 @@ export default function useWebRTCAudioSession(
             result = { ok: false, error: String(e) };
           }
 
+          // Send function output back to model (required)
           dataChannelRef.current?.send(
             JSON.stringify({
               type: "conversation.item.create",
@@ -387,6 +388,41 @@ export default function useWebRTCAudioSession(
           dataChannelRef.current?.send(
             JSON.stringify({ type: "response.create" })
           );
+
+          // Special handling for checkpoint.mark
+          if (toolName === "checkpoint.mark" && result?.ok) {
+            logger.info(`Checkpoint reached via tool: ${result.section}`);
+
+            // Update UI progress
+            setExamProgress((prev) => ({ ...prev, [result.section]: true }));
+
+            // Update local exam storage
+            if (examId) {
+              const exam = await getExamById(examId);
+              if (exam) {
+                const updatedExam = {
+                  ...exam,
+                  completedSteps: { ...(exam.completedSteps || {}), [result.section]: true },
+                  updatedAt: new Date().toISOString(),
+                };
+                await saveExam(updatedExam);
+              }
+            }
+
+            // Truncate conversation with summary from tool (NO extra fetch!)
+            dataChannelRef.current?.send(
+              JSON.stringify({
+                type: "conversation.truncate",
+                conversation: {
+                  last_messages: 8,
+                  summary: result.summary || "",
+                },
+              })
+            );
+
+            logger.info(`Truncated conversation with bbVersion ${result.bbVersion}`);
+          }
+
           break;
         }
 

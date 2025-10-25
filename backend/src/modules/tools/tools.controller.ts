@@ -3,8 +3,10 @@ import {
   blackboardInit,
   blackboardRead,
   blackboardWrite,
+  blackboardSummaryText,
 } from "../blackboard/blackboard.service";
 import { requireAuth } from "../../middleware/auth";
+import { getRedisClient } from "../../config/redis";
 
 const router = Router();
 router.use(requireAuth);
@@ -41,8 +43,38 @@ router.post("/qa.raise_conflict", async (req, res) => {
   res.json({ ok: true });
 });
 
-router.post("/checkpoint.mark", async (req, res) => {
-  res.json({ ok: true, marker: `[[COMPLETE: ${req.body.section}]]` });
+router.post("/checkpoint.mark", async (req, res, next) => {
+  try {
+    const { section, examId } = req.body;
+    if (!section || !examId) {
+      return res.status(400).json({ ok: false, error: "section and examId required" });
+    }
+
+    // Init blackboard
+    await blackboardInit(examId);
+
+    // Generate summary
+    const summary = await blackboardSummaryText(examId);
+
+    // Get version
+    const client = getRedisClient();
+    const version = await client.get(`blackboard:${examId}:version`);
+
+    // Optional: estimate coverage (MVP: null)
+    const coverage = null; // TODO: implement estimateCoverage(examId, section)
+
+    res.json({
+      ok: true,
+      section,
+      bbVersion: Number(version || 0),
+      coverage,
+      summary,
+      // Keep marker for backward compatibility
+      marker: `[[COMPLETE: ${section}]]`
+    });
+  } catch (e) {
+    return next(e);
+  }
 });
 
 router.post("/ehr.export", async (req, res) => {

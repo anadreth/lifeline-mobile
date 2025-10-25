@@ -56,11 +56,14 @@ export const TOOLS = [
     },
     {
       name: "checkpoint.mark",
-      description: "Emit completion marker",
+      description: "Mark section complete and get summary (use instead of [[COMPLETE]] marker)",
       parameters: {
         type: "object",
-        properties: { section: { type: "string" } },
-        required: ["section"]
+        properties: {
+          section: { type: "string", description: "Section name (HPI, OA, FA, etc.)" },
+          examId: { type: "string", description: "Exam/encounter ID" }
+        },
+        required: ["section", "examId"]
       }
     },
     {
