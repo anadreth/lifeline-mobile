@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import CryptoJS from 'crypto-js';
+import forge from 'node-forge';
 
 export interface EncryptedPayload {
   encryptedData: string;
@@ -169,14 +170,22 @@ export class ClientEncryptionService {
     }
   }
 
-  // RSA decryption (simplified - would use actual RSA library in production)
+  // RSA decryption using node-forge
   private static async decryptWithRSA(encryptedData: string, privateKeyPem: string): Promise<string> {
     try {
-      // This is a simplified implementation
-      // In production, use a proper RSA library like node-forge or similar
-      // For now, return the encrypted data as-is (this won't work in practice)
-      console.warn('RSA decryption not implemented - using simplified version');
-      return encryptedData;
+      // Parse the private key from PEM format
+      const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+
+      // Decode the base64-encoded encrypted data
+      const encrypted = forge.util.decode64(encryptedData);
+
+      // Decrypt using RSA-OAEP with SHA-256
+      const decrypted = privateKey.decrypt(encrypted, 'RSA-OAEP', {
+        md: forge.md.sha256.create(),
+        mgf1: forge.mgf.mgf1.create(forge.md.sha256.create())
+      });
+
+      return decrypted;
     } catch (error) {
       console.error('RSA decryption failed:', error);
       throw new Error('RSA decryption failed');

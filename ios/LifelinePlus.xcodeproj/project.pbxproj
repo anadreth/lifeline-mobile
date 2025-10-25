@@ -7,29 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		120A7A41498361F79BDB1AF9 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A21A8A64235A7542C0F9FB /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		4C16EE9EC4B82B6DCB66E79D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE895167F048DD44D793A3 /* ExpoModulesProvider.swift */; };
+		77635C74B50B309B201BDA8E /* libPods-LifelinePlus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9F45476E99D2775C4FDB0EA /* libPods-LifelinePlus.a */; };
+		89313C54AEFFF612C29C6FB2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5B3741B54D38436244C6D70E /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		E4C83E246C836779E29E2430 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E4D5BD521F03A2900A0C2CE9 /* PrivacyInfo.xcprivacy */; };
-		ECEFD1E3352316D25B627829 /* libPods-LifelinePlus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF8FE6AFB50BEB6DA165A1D0 /* libPods-LifelinePlus.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		00A21A8A64235A7542C0F9FB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LifelinePlus/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* LifelinePlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LifelinePlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = LifelinePlus/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = LifelinePlus/Info.plist; sourceTree = "<group>"; };
-		1B2EA83A778B5C9AE7B401E9 /* Pods-LifelinePlus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifelinePlus.debug.xcconfig"; path = "Target Support Files/Pods-LifelinePlus/Pods-LifelinePlus.debug.xcconfig"; sourceTree = "<group>"; };
-		46DE895167F048DD44D793A3 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-LifelinePlus/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		9FBAE9055A667ADD9E52E8DE /* Pods-LifelinePlus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifelinePlus.release.xcconfig"; path = "Target Support Files/Pods-LifelinePlus/Pods-LifelinePlus.release.xcconfig"; sourceTree = "<group>"; };
+		2C1AA274BD8ED9100B7E1530 /* Pods-LifelinePlus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifelinePlus.release.xcconfig"; path = "Target Support Files/Pods-LifelinePlus/Pods-LifelinePlus.release.xcconfig"; sourceTree = "<group>"; };
+		5B3741B54D38436244C6D70E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = LifelinePlus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = LifelinePlus/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E4D5BD521F03A2900A0C2CE9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = LifelinePlus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DBC0199A56B4772CDCDAADC1 /* Pods-LifelinePlus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifelinePlus.debug.xcconfig"; path = "Target Support Files/Pods-LifelinePlus/Pods-LifelinePlus.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EF8FE6AFB50BEB6DA165A1D0 /* libPods-LifelinePlus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LifelinePlus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LifelinePlus/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* LifelinePlus-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "LifelinePlus-Bridging-Header.h"; path = "LifelinePlus/LifelinePlus-Bridging-Header.h"; sourceTree = "<group>"; };
+		F9F45476E99D2775C4FDB0EA /* libPods-LifelinePlus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LifelinePlus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ECEFD1E3352316D25B627829 /* libPods-LifelinePlus.a in Frameworks */,
+				77635C74B50B309B201BDA8E /* libPods-LifelinePlus.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				E4D5BD521F03A2900A0C2CE9 /* PrivacyInfo.xcprivacy */,
+				5B3741B54D38436244C6D70E /* PrivacyInfo.xcprivacy */,
 			);
 			name = LifelinePlus;
 			sourceTree = "<group>";
@@ -62,27 +62,27 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				EF8FE6AFB50BEB6DA165A1D0 /* libPods-LifelinePlus.a */,
+				F9F45476E99D2775C4FDB0EA /* libPods-LifelinePlus.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		50BDA97F21E36A0D4EC5F480 /* Pods */ = {
+		3D6AB72D398F3CBE4BBE7A58 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1B2EA83A778B5C9AE7B401E9 /* Pods-LifelinePlus.debug.xcconfig */,
-				9FBAE9055A667ADD9E52E8DE /* Pods-LifelinePlus.release.xcconfig */,
+				DBC0199A56B4772CDCDAADC1 /* Pods-LifelinePlus.debug.xcconfig */,
+				2C1AA274BD8ED9100B7E1530 /* Pods-LifelinePlus.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
-		538B16F0F973912EAC6347A2 /* LifelinePlus */ = {
+		3D73114B1A226233138C426E /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				46DE895167F048DD44D793A3 /* ExpoModulesProvider.swift */,
+				B3E68D38977D0F79D3E95F54 /* LifelinePlus */,
 			);
-			name = LifelinePlus;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -99,8 +99,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				50BDA97F21E36A0D4EC5F480 /* Pods */,
-				E3247577AD631618039BBFCF /* ExpoModulesProviders */,
+				3D6AB72D398F3CBE4BBE7A58 /* Pods */,
+				3D73114B1A226233138C426E /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,6 +115,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		B3E68D38977D0F79D3E95F54 /* LifelinePlus */ = {
+			isa = PBXGroup;
+			children = (
+				00A21A8A64235A7542C0F9FB /* ExpoModulesProvider.swift */,
+			);
+			name = LifelinePlus;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,14 +130,6 @@
 			);
 			name = Supporting;
 			path = LifelinePlus/Supporting;
-			sourceTree = "<group>";
-		};
-		E3247577AD631618039BBFCF /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				538B16F0F973912EAC6347A2 /* LifelinePlus */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "LifelinePlus" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				73908090D5DF165092F467C2 /* [Expo] Configure project */,
+				5CA96729858A53B050EF2437 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				6F87D1020DAF6A43E2CDA9D7 /* [CP] Embed Pods Frameworks */,
+				7D1379F1EA8166BEB06D44FA /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				E4C83E246C836779E29E2430 /* PrivacyInfo.xcprivacy in Resources */,
+				89313C54AEFFF612C29C6FB2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,7 +240,26 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6F87D1020DAF6A43E2CDA9D7 /* [CP] Embed Pods Frameworks */ = {
+		5CA96729858A53B050EF2437 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-LifelinePlus/expo-configure-project.sh\"\n";
+		};
+		7D1379F1EA8166BEB06D44FA /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,25 +278,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LifelinePlus/Pods-LifelinePlus-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
-		};
-		73908090D5DF165092F467C2 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-LifelinePlus/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -333,7 +333,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				4C16EE9EC4B82B6DCB66E79D /* ExpoModulesProvider.swift in Sources */,
+				120A7A41498361F79BDB1AF9 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +342,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1B2EA83A778B5C9AE7B401E9 /* Pods-LifelinePlus.debug.xcconfig */;
+			baseConfigurationReference = DBC0199A56B4772CDCDAADC1 /* Pods-LifelinePlus.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -378,7 +378,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9FBAE9055A667ADD9E52E8DE /* Pods-LifelinePlus.release.xcconfig */;
+			baseConfigurationReference = 2C1AA274BD8ED9100B7E1530 /* Pods-LifelinePlus.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
