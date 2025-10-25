@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../src/constants/colors';
+import React from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FamilyMemberCard from '../../src/components/FamilyMemberCard';
+import { COLORS } from '../../src/constants/colors';
 
 const familyMembers = [
   {

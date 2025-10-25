@@ -1,12 +1,12 @@
-import React from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS } from '../../src/constants/colors';
+import React from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import DailyHealthNudgesCard from '../../src/components/DailyHealthNudgesCard';
+import HealthGoalsCard from '../../src/components/HealthGoalsCard';
 import LiveVitalsCard from '../../src/components/LiveVitalsCard';
 import MyAIHealthAssistantCard from '../../src/components/MyAIHealthAssistantCard';
-import DailyHealthNudgesCard from '../../src/components/DailyHealthNudgesCard';
 import UpcomingAppointmentsCard from '../../src/components/UpcomingAppointmentsCard';
-import HealthGoalsCard from '../../src/components/HealthGoalsCard';
+import { COLORS } from '../../src/constants/colors';
 
 export default function HomeScreen() {
   const router = useRouter();

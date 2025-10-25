@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { useIsFocused } from '@react-navigation/native';
-import { SwipeListView } from 'react-native-swipe-list-view';
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
+import { Stack, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SwipeListView } from 'react-native-swipe-list-view';
+import ExaminationListItem from '../src/components/ExaminationListItem';
 import { COLORS } from '../src/constants/colors';
 import { Exam } from '../src/models/exam';
-import { getAllExams, deleteExamById } from '../src/utils/exam-storage';
-import ExaminationListItem from '../src/components/ExaminationListItem';
+import { deleteExamById, getAllExams } from '../src/utils/exam-storage';
 
 export default function ExaminationsScreen() {
   const router = useRouter();

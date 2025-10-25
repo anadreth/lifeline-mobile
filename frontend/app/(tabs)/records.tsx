@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, SafeAreaView, View, Text, FlatList } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { COLORS } from '../../src/constants/colors';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import SearchBar from '../../src/components/common/SearchBar';
 import RecordCategoryCard, { RecordCategoryCardProps } from '../../src/components/RecordCategoryCard';
-import { useRouter } from 'expo-router';
+import { COLORS } from '../../src/constants/colors';
 import { getAllExams } from '../../src/utils/exam-storage';
 
 // Define a more specific type for our grid items, including the possibility of being a placeholder

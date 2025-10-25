@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View } from 'react-native';
-import { COLORS } from '../../src/constants/colors';
+import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import ProfileHeader from '../../src/components/ProfileHeader';
 import SettingsItem from '../../src/components/SettingsItem';
+import { COLORS } from '../../src/constants/colors';
 
 export default function ProfileScreen() {
   const [notifications, setNotifications] = useState(true);

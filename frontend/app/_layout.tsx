@@ -1,9 +1,9 @@
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
 import CustomSplashScreen from '../src/screens/SplashScreen';
 
 // Keep the splash screen visible while we fetch resources

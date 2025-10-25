@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { COLORS } from '../../src/constants/colors';
+import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AppointmentListCard, { AppointmentListCardProps } from '../../src/components/AppointmentListCard';
+import { COLORS } from '../../src/constants/colors';
 
 const upcomingAppointments: AppointmentListCardProps[] = [
   {

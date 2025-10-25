@@ -1,11 +1,11 @@
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { COLORS } from '../../../src/constants/colors';
-import { examStepContent } from '../../../src/constants/exam-step-content';
-import StepDetailScreen from '../../../src/screens/StepDetailScreen';
-import { sectionsWithIndex } from '../../../src/constants/exam-data';
 import { ActivityIndicator, View } from 'react-native';
+import { COLORS } from '../../../src/constants/colors';
+import { sectionsWithIndex } from '../../../src/constants/exam-data';
+import { examStepContent } from '../../../src/constants/exam-step-content';
 import useWebRTCAudioSession from '../../../src/hooks/use-webrtc';
+import StepDetailScreen from '../../../src/screens/StepDetailScreen';
 
 export default function ExamStepDetailScreen() {
   const router = useRouter();

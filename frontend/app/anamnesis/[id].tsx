@@ -1,12 +1,12 @@
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
+import { COLORS } from '../../src/constants/colors';
+import useWebRTCAudioSession from '../../src/hooks/use-webrtc';
+import { Exam } from '../../src/models/exam';
 import AudioScreen from '../../src/screens/AudioScreen';
 import ChatScreen from '../../src/screens/ChatScreen';
 import { getExamById } from '../../src/utils/exam-storage';
-import { Exam } from '../../src/models/exam';
-import useWebRTCAudioSession from '../../src/hooks/use-webrtc';
-import { COLORS } from '../../src/constants/colors';
 
 type Mode = 'audio' | 'chat';
 
