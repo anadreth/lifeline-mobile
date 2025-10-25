@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lifeline-postgres
+    environment:
+      POSTGRES_DB: lifeline_db
+      POSTGRES_USER: lifeline_user
+      POSTGRES_PASSWORD: lifeline_secure_password_2024
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/ssl:/var/lib/postgresql/ssl
+    command: >
+      postgres
+      -c ssl=on
+      -c ssl_cert_file=/var/lib/postgresql/ssl/server.crt
+      -c ssl_key_file=/var/lib/postgresql/ssl/server.key
+      -c shared_preload_libraries=pgcrypto
+      -c log_statement=all
+      -c log_directory=pg_log
+      -c log_filename=postgresql-%Y-%m-%d_%H%M%S.log
+      -c logging_collector=on
+    networks:
+      - lifeline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lifeline_user -d lifeline_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: lifeline-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass lifeline_redis_password_2024
+    networks:
+      - lifeline-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lifeline-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://lifeline_user:lifeline_secure_password_2024@postgres:5432/lifeline_db?sslmode=require
+      REDIS_URL: redis://:lifeline_redis_password_2024@redis:6379
+      JWT_SECRET: lifeline_jwt_super_secret_key_2024_change_in_production
+      ENCRYPTION_KEY: lifeline_encryption_master_key_2024_32_chars
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lifeline-network
+    restart: unless-stopped
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+    command: npm run dev
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  lifeline-network:
+    driver: bridge
