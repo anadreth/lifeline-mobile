@@ -11,7 +11,7 @@ Secure healthcare backend with end-to-end encryption and zero-knowledge architec
 - 📊 **Audit Logging**: GDPR-compliant audit trails
 - 🐳 **Docker Ready**: Easy deployment with Docker Compose
 - 📝 **TypeScript**: Full type safety
-- 🗃️ **PostgreSQL**: Robust database with encryption at rest
+- 🗃️ **PostgreSQL + Prisma**: Type-safe database access with robust encryption
 - ⚡ **Redis Cache**: High-performance caching layer
 
 ## Quick Start
@@ -36,20 +36,29 @@ cd backend
 npm install
 ```
 
-### 3. Start Services
+### 3. Generate Prisma Client
+
+```bash
+npm run prisma:generate
+```
+
+### 4. Start Services
 
 ```bash
 # Start PostgreSQL and Redis
 docker-compose up -d postgres redis
 
+# Push Prisma schema to database
+npm run prisma:push
+
 # Start development server
 npm run dev
 ```
 
-### 4. Production Deployment
+### 5. Production Deployment
 
 ```bash
-# Build and start all services
+# Build and start all services (includes automatic Prisma migration)
 docker-compose up -d --build
 ```
 
@@ -116,13 +125,32 @@ LOG_LEVEL=info
 
 ## Database Schema
 
-### Core Tables
-- `users` - User accounts (minimal metadata)
-- `encrypted_health_data` - All health data (encrypted)
-- `encrypted_data_keys` - Encryption keys (RSA encrypted)
-- `chat_conversations` - Chat history (encrypted)
-- `audit_logs` - Compliance audit trail
-- `user_sessions` - Session management
+### Prisma ORM
+This project uses Prisma for type-safe database access. The schema is defined in `prisma/schema.prisma`.
+
+### Core Models
+- `User` - User accounts (minimal metadata)
+- `EncryptedHealthData` - All health data (encrypted)
+- `EncryptedDataKey` - Encryption keys (RSA encrypted)
+- `ChatConversation` - Chat history (encrypted)
+- `DataSharingPermission` - Secure data sharing
+- `AuditLog` - Compliance audit trail
+- `UserSession` - Session management
+
+### Prisma Commands
+```bash
+# Generate Prisma Client
+npm run prisma:generate
+
+# Push schema to database (development)
+npm run prisma:push
+
+# Create a migration
+npm run prisma:migrate
+
+# Open Prisma Studio (GUI)
+npm run prisma:studio
+```
 
 ## Compliance
 
@@ -158,7 +186,11 @@ npm run build
 
 ### Database Migration
 ```bash
-npm run migrate
+# Create and apply migration
+npm run prisma:migrate
+
+# Or push schema changes directly (development)
+npm run prisma:push
 ```
 
 ## Production Considerations

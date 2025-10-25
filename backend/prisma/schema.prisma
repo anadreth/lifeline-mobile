@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String   @id @default(uuid())
+  email_hash            String   @unique
+  salt                  String
+  password_hash         String
+  public_key            String
+  encrypted_private_key String
+  account_status        String   @default("active")
+  created_at            DateTime @default(now())
+  last_login            DateTime?
+
+  // Relations
+  encrypted_data_keys       EncryptedDataKey[]
+  encrypted_health_data     EncryptedHealthData[]
+  chat_conversations        ChatConversation[]
+  audit_logs                AuditLog[]
+  user_sessions             UserSession[]
+  data_sharing_as_owner     DataSharingPermission[] @relation("DataOwner")
+  data_sharing_as_recipient DataSharingPermission[] @relation("DataRecipient")
+
+  @@map("users")
+}
+
+model EncryptedDataKey {
+  id            String  @id @default(uuid())
+  user_id       String
+  data_type     String
+  encrypted_key String
+  key_version   Int?
+
+  // Relations
+  user                  User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  encrypted_health_data EncryptedHealthData[]
+
+  @@map("encrypted_data_keys")
+}
+
+model EncryptedHealthData {
+  id                 String   @id @default(uuid())
+  user_id            String
+  data_type          String
+  encrypted_payload  Bytes
+  metadata_encrypted Bytes?
+  data_key_id        String
+  nonce              String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  // Relations
+  user     User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  data_key EncryptedDataKey @relation(fields: [data_key_id], references: [id])
+
+  @@map("encrypted_health_data")
+}
+
+model ChatConversation {
+  id                 String   @id @default(uuid())
+  user_id            String
+  exam_id            String?
+  encrypted_messages Bytes
+  message_count      Int
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("chat_conversations")
+}
+
+model DataSharingPermission {
+  id                    String @id @default(uuid())
+  data_owner_id         String
+  shared_with_user_id   String
+  data_id               String
+
+  // Relations
+  data_owner    User @relation("DataOwner", fields: [data_owner_id], references: [id], onDelete: Cascade)
+  shared_with   User @relation("DataRecipient", fields: [shared_with_user_id], references: [id], onDelete: Cascade)
+
+  @@map("data_sharing_permissions")
+}
+
+model AuditLog {
+  id               String    @id @default(uuid())
+  user_id          String?
+  action           String
+  resource_type    String
+  resource_id_hash String?
+  ip_address       String?
+  user_agent       String?
+  timestamp        DateTime  @default(now())
+
+  // Relations
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model UserSession {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String   @unique
+  created_at DateTime @default(now())
+  expires_at DateTime
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}

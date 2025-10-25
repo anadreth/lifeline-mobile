@@ -13,7 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
       - ./database/ssl:/var/lib/postgresql/ssl
     command: >
       postgres
@@ -76,7 +75,8 @@ services:
     volumes:
       - ./src:/app/src
       - ./package.json:/app/package.json
-    command: npm run dev
+      - ./prisma:/app/prisma
+    command: sh -c "npx prisma db push && npm run dev"
 
 volumes:
   postgres_data:

@@ -84,7 +84,7 @@ export const errorHandler = (
       code,
       message,
       timestamp: new Date().toISOString(),
-      requestId: req.id || undefined
+      requestId: (req as any).id || undefined
     }
   };
 

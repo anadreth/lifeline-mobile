@@ -15,10 +15,26 @@ npm install expo-secure-store crypto-js
 
 ```bash
 cd backend
-# Generate SSL certificates
+
+# Generate SSL certificates (first time only)
 cd database/ssl && ./generate-ssl.sh && cd ../..
 
-# Start services
+# Install dependencies
+npm install
+
+# Generate Prisma Client
+npm run prisma:generate
+
+# Start PostgreSQL and Redis
+docker-compose up -d postgres redis
+
+# Push database schema (first time or after schema changes)
+npm run prisma:push
+
+# Start backend development server
+npm run dev
+
+# Or start all services with Docker
 docker-compose up -d
 
 # Check health
@@ -200,6 +216,7 @@ await apiService.deleteHealthData(id);
 
 ### Backend
 - ✅ Zero-knowledge architecture
+- ✅ Prisma ORM with type-safe database queries
 - ✅ Row-level security in database
 - ✅ Audit logging for compliance
 - ✅ Rate limiting and abuse protection
@@ -236,11 +253,17 @@ try {
 - Client-side cache for 5 minutes
 - Lazy loading for large datasets
 - Background sync when online
+- Prisma query optimization and connection pooling
 
 ### Offline Support
 - Cache decrypted data temporarily
 - Queue operations when offline
 - Sync when connection restored
+
+### Database Performance
+- Prisma automatically optimizes queries
+- Connection pooling handled by Prisma
+- Use Prisma Studio for query inspection: `npm run prisma:studio`
 
 ## 🧪 Testing
 
@@ -248,6 +271,9 @@ try {
 ```bash
 cd backend
 npm test
+
+# Inspect database with Prisma Studio
+npm run prisma:studio
 ```
 
 ### Mobile Integration Testing
@@ -255,6 +281,18 @@ npm test
 cd lifeline-mobile
 npm test
 # Test with backend running on localhost:3000
+```
+
+### Database Testing
+```bash
+# View database with Prisma Studio GUI
+cd backend && npm run prisma:studio
+
+# Check database schema
+npx prisma db pull
+
+# Validate schema
+npx prisma validate
 ```
 
 ### Security Testing
@@ -269,8 +307,11 @@ npm test
 # Backend health
 curl http://localhost:3000/health
 
-# Database health  
+# Database health
 docker exec lifeline-postgres pg_isready
+
+# Prisma Studio (database GUI)
+cd backend && npm run prisma:studio
 ```
 
 ### Logs
@@ -280,6 +321,9 @@ docker logs lifeline-backend
 
 # Database logs
 docker logs lifeline-postgres
+
+# Prisma query logging (enabled in development)
+# Check console output when running npm run dev
 ```
 
 ## 🆘 Troubleshooting
@@ -297,6 +341,15 @@ docker logs lifeline-postgres
 3. **"Database connection failed"**
    - Check PostgreSQL container status
    - Verify SSL certificates
+   - Ensure Prisma schema is pushed: `npm run prisma:push`
+
+4. **"Prisma Client not found"**
+   - Run `npm run prisma:generate`
+   - Rebuild: `npm run build`
+
+5. **"Schema out of sync"**
+   - Push schema changes: `npm run prisma:push`
+   - Or create migration: `npm run prisma:migrate`
 
 ### Debug Mode
 ```typescript
@@ -312,21 +365,103 @@ if (__DEV__) {
 ### Development
 ```bash
 # Start backend
-cd backend && docker-compose up -d
+cd backend
 
-# Start mobile app
-cd lifeline-mobile && npm start
+# Generate Prisma Client (first time)
+npm run prisma:generate
+
+# Start services
+docker-compose up -d postgres redis
+
+# Push schema to database
+npm run prisma:push
+
+# Start dev server
+npm run dev
+
+# Start mobile app (in new terminal)
+cd ../frontend && npm start
 ```
 
 ### Production
-- Use proper SSL certificates
-- Change all default passwords
-- Configure monitoring and alerting
-- Set up backup procedures
+```bash
+# Backend production deployment
+cd backend
+
+# Build with Prisma
+docker-compose up -d --build
+
+# The Dockerfile automatically:
+# 1. Installs dependencies
+# 2. Generates Prisma Client
+# 3. Builds TypeScript
+# 4. Pushes schema to database on startup
+```
+
+### Production Checklist
+- ✅ Use proper SSL certificates
+- ✅ Change all default passwords in `.env`
+- ✅ Run Prisma migrations: `npm run prisma:migrate`
+- ✅ Configure monitoring and alerting
+- ✅ Set up automated backups
+- ✅ Use connection pooling (Prisma handles this)
+- ✅ Enable Prisma query logging in production if needed
+
+### Database Migrations
+```bash
+# Create a migration (recommended for production)
+npm run prisma:migrate
+
+# Or push schema directly (development only)
+npm run prisma:push
+
+# Check migration status
+npx prisma migrate status
+```
 
 ## 📞 Support
 
-- Backend Issues: Check `backend/README.md`
+- Backend Issues: Check `backend/README.md` and `backend/PRISMA_MIGRATION.md`
+- Database Issues: Use Prisma Studio (`npm run prisma:studio`) for inspection
 - Mobile Issues: Check existing mobile documentation
 - Security Concerns: Follow responsible disclosure
-- Performance Issues: Check monitoring dashboards
+- Performance Issues: Check monitoring dashboards and Prisma query logs
+
+## 🗄️ Database Management with Prisma
+
+### Useful Prisma Commands
+
+```bash
+# Open visual database browser
+npm run prisma:studio
+
+# Generate TypeScript client
+npm run prisma:generate
+
+# Push schema changes (development)
+npm run prisma:push
+
+# Create migration (production)
+npm run prisma:migrate
+
+# Pull existing database schema
+npx prisma db pull
+
+# Validate schema
+npx prisma validate
+
+# Format schema file
+npx prisma format
+```
+
+### Schema Location
+- Database schema: `backend/prisma/schema.prisma`
+- Generated types: `backend/node_modules/@prisma/client`
+
+### Benefits of Prisma
+- ✅ Type-safe database queries with full autocomplete
+- ✅ Automatic migrations from schema changes
+- ✅ Built-in connection pooling
+- ✅ Prisma Studio GUI for data inspection
+- ✅ Zero-cost query optimization
+- ✅ Prevents SQL injection by design

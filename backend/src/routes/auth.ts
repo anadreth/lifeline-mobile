@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
-import { query } from '../config/database';
+import { getPrisma } from '../config/prisma';
 import { EncryptionService } from '../utils/encryption';
 import { ValidationError, ConflictError, UnauthorizedError } from '../middleware/errorHandler';
 import { cacheSet } from '../config/redis';
@@ -34,17 +34,18 @@ router.post('/register', async (req, res, next) => {
     }
 
     const { email, password, deviceId } = value;
+    const prisma = getPrisma();
 
     // Hash email for privacy
     const emailHash = EncryptionService.hash(email.toLowerCase());
 
     // Check if user already exists
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email_hash = $1',
-      [emailHash]
-    );
+    const existingUser = await prisma.user.findUnique({
+      where: { email_hash: emailHash },
+      select: { id: true },
+    });
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       throw new ConflictError('User already exists');
     }
 
@@ -60,14 +61,21 @@ router.post('/register', async (req, res, next) => {
     const encryptedPrivateKey = EncryptionService.encrypt(privateKey, masterKey);
 
     // Create user
-    const result = await query(
-      `INSERT INTO users (email_hash, salt, password_hash, public_key, encrypted_private_key)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, created_at`,
-      [emailHash, salt, passwordHash, publicKey, JSON.stringify(encryptedPrivateKey)]
-    );
+    const newUser = await prisma.user.create({
+      data: {
+        email_hash: emailHash,
+        salt: salt,
+        password_hash: passwordHash,
+        public_key: publicKey,
+        encrypted_private_key: JSON.stringify(encryptedPrivateKey),
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
 
-    const userId = result.rows[0].id;
+    const userId = newUser.id;
 
     // Generate initial data encryption keys
     const examKey = EncryptionService.generateKey();
@@ -81,33 +89,43 @@ router.post('/register', async (req, res, next) => {
 
     // Store encrypted data keys
     await Promise.all([
-      query(
-        'INSERT INTO encrypted_data_keys (user_id, data_type, encrypted_key) VALUES ($1, $2, $3)',
-        [userId, 'exam', encryptedExamKey]
-      ),
-      query(
-        'INSERT INTO encrypted_data_keys (user_id, data_type, encrypted_key) VALUES ($1, $2, $3)',
-        [userId, 'vitals', encryptedVitalsKey]
-      ),
-      query(
-        'INSERT INTO encrypted_data_keys (user_id, data_type, encrypted_key) VALUES ($1, $2, $3)',
-        [userId, 'records', encryptedRecordsKey]
-      )
+      prisma.encryptedDataKey.create({
+        data: {
+          user_id: userId,
+          data_type: 'exam',
+          encrypted_key: encryptedExamKey,
+        },
+      }),
+      prisma.encryptedDataKey.create({
+        data: {
+          user_id: userId,
+          data_type: 'vitals',
+          encrypted_key: encryptedVitalsKey,
+        },
+      }),
+      prisma.encryptedDataKey.create({
+        data: {
+          user_id: userId,
+          data_type: 'records',
+          encrypted_key: encryptedRecordsKey,
+        },
+      }),
     ]);
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: userId, emailHash },
-      process.env.JWT_SECRET!,
-      { expiresIn: '24h' }
-    );
+    const token = jwt.sign({ id: userId, emailHash }, process.env.JWT_SECRET!, { expiresIn: '24h' });
 
     // Log registration
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [userId, 'REGISTER', 'user', req.ip, req.get('User-Agent'), new Date()]
-    );
+    await prisma.auditLog.create({
+      data: {
+        user_id: userId,
+        action: 'REGISTER',
+        resource_type: 'user',
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+        timestamp: new Date(),
+      },
+    });
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -115,17 +133,16 @@ router.post('/register', async (req, res, next) => {
       user: {
         id: userId,
         publicKey,
-        createdAt: result.rows[0].created_at
+        createdAt: newUser.created_at,
       },
       // Client needs these for initial setup
       encryptedPrivateKey,
       dataKeys: {
         exam: encryptedExamKey,
         vitals: encryptedVitalsKey,
-        records: encryptedRecordsKey
-      }
+        records: encryptedRecordsKey,
+      },
     });
-
   } catch (error) {
     next(error);
   }
@@ -141,22 +158,28 @@ router.post('/login', async (req, res, next) => {
     }
 
     const { email, password, deviceId } = value;
+    const prisma = getPrisma();
 
     // Hash email
     const emailHash = EncryptionService.hash(email.toLowerCase());
 
     // Find user
-    const userResult = await query(
-      `SELECT id, salt, password_hash, public_key, encrypted_private_key, account_status, last_login
-       FROM users WHERE email_hash = $1`,
-      [emailHash]
-    );
+    const user = await prisma.user.findUnique({
+      where: { email_hash: emailHash },
+      select: {
+        id: true,
+        salt: true,
+        password_hash: true,
+        public_key: true,
+        encrypted_private_key: true,
+        account_status: true,
+        last_login: true,
+      },
+    });
 
-    if (userResult.rows.length === 0) {
+    if (!user) {
       throw new UnauthorizedError('Invalid credentials');
     }
-
-    const user = userResult.rows[0];
 
     if (user.account_status !== 'active') {
       throw new UnauthorizedError('Account is suspended');
@@ -169,35 +192,39 @@ router.post('/login', async (req, res, next) => {
     }
 
     // Get user's data keys
-    const dataKeysResult = await query(
-      'SELECT data_type, encrypted_key FROM encrypted_data_keys WHERE user_id = $1',
-      [user.id]
-    );
+    const dataKeysRecords = await prisma.encryptedDataKey.findMany({
+      where: { user_id: user.id },
+      select: {
+        data_type: true,
+        encrypted_key: true,
+      },
+    });
 
     const dataKeys: Record<string, string> = {};
-    dataKeysResult.rows.forEach(row => {
+    dataKeysRecords.forEach((row) => {
       dataKeys[row.data_type] = row.encrypted_key;
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id, emailHash },
-      process.env.JWT_SECRET!,
-      { expiresIn: '24h' }
-    );
+    const token = jwt.sign({ id: user.id, emailHash }, process.env.JWT_SECRET!, { expiresIn: '24h' });
 
     // Update last login
-    await query(
-      'UPDATE users SET last_login = $1 WHERE id = $2',
-      [new Date(), user.id]
-    );
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { last_login: new Date() },
+    });
 
     // Log login
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [user.id, 'LOGIN', 'user', req.ip, req.get('User-Agent'), new Date()]
-    );
+    await prisma.auditLog.create({
+      data: {
+        user_id: user.id,
+        action: 'LOGIN',
+        resource_type: 'user',
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+        timestamp: new Date(),
+      },
+    });
 
     res.json({
       message: 'Login successful',
@@ -205,12 +232,11 @@ router.post('/login', async (req, res, next) => {
       user: {
         id: user.id,
         publicKey: user.public_key,
-        lastLogin: user.last_login
+        lastLogin: user.last_login,
       },
       encryptedPrivateKey: JSON.parse(user.encrypted_private_key),
-      dataKeys
+      dataKeys,
     });
-
   } catch (error) {
     next(error);
   }
@@ -222,6 +248,7 @@ router.post('/logout', authenticateToken, async (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
     const user = (req as AuthenticatedRequest).user;
+    const prisma = getPrisma();
 
     if (token) {
       // Add token to blacklist (expires in 24h to match JWT expiry)
@@ -229,11 +256,16 @@ router.post('/logout', authenticateToken, async (req, res, next) => {
     }
 
     // Log logout for audit trail
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [user.id, 'LOGOUT', 'user', req.ip, req.get('User-Agent'), new Date()]
-    );
+    await prisma.auditLog.create({
+      data: {
+        user_id: user.id,
+        action: 'LOGOUT',
+        resource_type: 'user',
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+        timestamp: new Date(),
+      },
+    });
 
     res.json({ message: 'Logout successful' });
   } catch (error) {

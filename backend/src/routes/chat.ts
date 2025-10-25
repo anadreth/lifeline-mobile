@@ -1,6 +1,6 @@
 import express from 'express';
 import Joi from 'joi';
-import { query } from '../config/database';
+import { getPrisma } from '../config/prisma';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { ValidationError, NotFoundError } from '../middleware/errorHandler';
 import { EncryptionService } from '../utils/encryption';
@@ -26,26 +26,26 @@ router.post('/', async (req, res, next) => {
 
     const { examId, encryptedMessages, nonce, tag, messageCount } = value;
     const userId = (req as AuthenticatedRequest).user.id;
+    const prisma = getPrisma();
 
-    const result = await query(
-      `INSERT INTO chat_conversations 
-       (user_id, exam_id, encrypted_messages, message_count)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, created_at`,
-      [
-        userId,
-        examId || null,
-        Buffer.from(encryptedMessages + ':' + tag, 'utf8'),
-        messageCount
-      ]
-    );
+    const result = await prisma.chatConversation.create({
+      data: {
+        user_id: userId,
+        exam_id: examId || null,
+        encrypted_messages: Buffer.from(encryptedMessages + ':' + tag, 'utf8'),
+        message_count: messageCount,
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
 
     res.status(201).json({
       message: 'Chat conversation created',
-      id: result.rows[0].id,
-      createdAt: result.rows[0].created_at
+      id: result.id,
+      createdAt: result.created_at,
     });
-
   } catch (error) {
     next(error);
   }
@@ -56,26 +56,21 @@ router.get('/', async (req, res, next) => {
   try {
     const userId = (req as AuthenticatedRequest).user.id;
     const { examId } = req.query;
+    const prisma = getPrisma();
 
-    let queryText = `
-      SELECT id, exam_id, encrypted_messages, message_count, created_at, updated_at
-      FROM chat_conversations 
-      WHERE user_id = $1
-    `;
-    const queryParams = [userId];
-
+    const whereCondition: any = { user_id: userId };
     if (examId) {
-      queryText += ' AND exam_id = $2';
-      queryParams.push(examId as string);
+      whereCondition.exam_id = examId as string;
     }
 
-    queryText += ' ORDER BY updated_at DESC';
+    const conversationRecords = await prisma.chatConversation.findMany({
+      where: whereCondition,
+      orderBy: { updated_at: 'desc' },
+    });
 
-    const result = await query(queryText, queryParams);
+    const conversations = conversationRecords.map((row) => {
+      const [encryptedMessages, tag] = Buffer.from(row.encrypted_messages).toString('utf8').split(':');
 
-    const conversations = result.rows.map(row => {
-      const [encryptedMessages, tag] = row.encrypted_messages.toString('utf8').split(':');
-      
       return {
         id: row.id,
         examId: row.exam_id,
@@ -83,12 +78,11 @@ router.get('/', async (req, res, next) => {
         tag,
         messageCount: row.message_count,
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
       };
     });
 
     res.json(conversations);
-
   } catch (error) {
     next(error);
   }
@@ -103,33 +97,39 @@ router.put('/:id', async (req, res, next) => {
     }
 
     const { encryptedMessages, tag, messageCount } = value;
-    const userId = (req as AuthenticatedRequest).user.id;
     const { id } = req.params;
+    const userId = (req as unknown as AuthenticatedRequest).user.id;
+    const prisma = getPrisma();
 
-    const result = await query(
-      `UPDATE chat_conversations 
-       SET encrypted_messages = $1, message_count = $2, updated_at = $3
-       WHERE id = $4 AND user_id = $5
-       RETURNING updated_at`,
-      [
-        Buffer.from(encryptedMessages + ':' + tag, 'utf8'),
-        messageCount,
-        new Date(),
-        id,
-        userId
-      ]
-    );
+    // Check if conversation exists and belongs to user
+    const existing = await prisma.chatConversation.findFirst({
+      where: {
+        id: id,
+        user_id: userId,
+      },
+    });
 
-    if (result.rows.length === 0) {
+    if (!existing) {
       throw new NotFoundError('Chat conversation not found');
     }
+
+    const result = await prisma.chatConversation.update({
+      where: { id: id },
+      data: {
+        encrypted_messages: Buffer.from(encryptedMessages + ':' + tag, 'utf8'),
+        message_count: messageCount,
+        updated_at: new Date(),
+      },
+      select: {
+        updated_at: true,
+      },
+    });
 
     res.json({
       message: 'Chat updated successfully',
       id,
-      updatedAt: result.rows[0].updated_at
+      updatedAt: result.updated_at,
     });
-
   } catch (error) {
     next(error);
   }

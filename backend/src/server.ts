@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
-import { connectDatabase } from './config/database';
+import { connectDatabase, closeDatabase } from './config/prisma';
 import { connectRedis } from './config/redis';
 
 // Import routes
@@ -121,13 +121,15 @@ const startServer = async () => {
 };
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   logger.info('🛑 SIGTERM received, shutting down gracefully');
+  await closeDatabase();
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   logger.info('🛑 SIGINT received, shutting down gracefully');
+  await closeDatabase();
   process.exit(0);
 });
 

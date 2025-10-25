@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { query } from '../config/database';
+import { getPrisma } from '../config/prisma';
 import { UnauthorizedError, ForbiddenError } from './errorHandler';
 import { logger } from '../utils/logger';
 import { cacheGet, cacheSet } from '../config/redis';
@@ -32,19 +32,23 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
 
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    
-    // Check if user still exists and is active
-    const userResult = await query(
-      'SELECT id, email_hash, public_key, account_status FROM users WHERE id = $1',
-      [decoded.id]
-    );
 
-    if (userResult.rows.length === 0) {
+    // Check if user still exists and is active
+    const prisma = getPrisma();
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email_hash: true,
+        public_key: true,
+        account_status: true,
+      },
+    });
+
+    if (!user) {
       throw new UnauthorizedError('User not found');
     }
 
-    const user = userResult.rows[0];
-    
     if (user.account_status !== 'active') {
       throw new ForbiddenError('Account is suspended or deleted');
     }
@@ -53,7 +57,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     (req as AuthenticatedRequest).user = {
       id: user.id,
       emailHash: user.email_hash,
-      publicKey: user.public_key
+      publicKey: user.public_key,
     };
 
     // Log access for audit
@@ -142,18 +146,17 @@ export const userRateLimit = (maxRequests: number, windowMs: number) => {
 // Log user access for audit trail
 const logUserAccess = async (req: Request, userId: string) => {
   try {
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        userId,
-        'ACCESS',
-        `${req.method} ${req.path}`,
-        req.ip,
-        req.get('User-Agent'),
-        new Date()
-      ]
-    );
+    const prisma = getPrisma();
+    await prisma.auditLog.create({
+      data: {
+        user_id: userId,
+        action: 'ACCESS',
+        resource_type: `${req.method} ${req.path}`,
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent'),
+        timestamp: new Date(),
+      },
+    });
   } catch (error) {
     logger.error('Failed to log user access:', error);
     // Don't fail the request if audit logging fails
